@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- 應用基本資訊 -->
+    <key>items</key>
+    <array>
+        <dict>
+            <!-- 應用資產 -->
+            <key>assets</key>
+            <array>
+                <!-- 應用 IPA 檔案 -->
+                <dict>
+                    <key>kind</key>
+                    <string>software-package</string>
+                    <key>url</key>
+                    <string>https://your-server.com/mphasis_checkin.ipa</string>
+                </dict>
+                <!-- 小圖示 (57x57) -->
+                <dict>
+                    <key>kind</key>
+                    <string>display-image</string>
+                    <key>url</key>
+                    <string>https://your-server.com/icon-57.png</string>
+                </dict>
+                <!-- 大圖示 (512x512) -->
+                <dict>
+                    <key>kind</key>
+                    <string>full-size-image</string>
+                    <key>url</key>
+                    <string>https://your-server.com/icon-512.png</string>
+                </dict>
+            </array>
+            <!-- 應用中繼資料 -->
+            <key>metadata</key>
+            <dict>
+                <key>bundle-identifier</key>
+                <string>com.mphasis.checkin.enterprise</string>
+                <key>bundle-version</key>
+                <string>1.0.0</string>
+                <key>kind</key>
+                <string>software</string>
+                <key>platform-identifier</key>
+                <string>com.apple.platform.iphoneos</string>
+                <key>title</key>
+                <string>Mphasis 企業打卡系統</string>
+                <key>subtitle</key>
+                <string>Enterprise Edition</string>
+            </dict>
+        </dict>
+    </array>
+    <!-- 配置文件資訊 -->
+    <key>label</key>
+    <string>Mphasis CheckIN Enterprise</string>
+</dict>
+</plist>
