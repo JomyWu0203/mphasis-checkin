@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadDisplayName</key>
+    <string>iOS原生打卡助手</string>
+    <key>PayloadDescription</key>
+    <string>專為 iOS Safari 設計的打卡助手，提供實用的引導功能</string>
+    <key>PayloadIdentifier</key>
+    <string>com.mphasis.ios.native.checkin.v1</string>
+    <key>PayloadOrganization</key>
+    <string>Mphasis Limited</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>12345678-1234-5678-9ABC-123456789012</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+    <key>PayloadScope</key>
+    <string>User</string>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>PayloadType</key>
+            <string>com.apple.webClip.managed</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>PayloadIdentifier</key>
+            <string>com.mphasis.ios.webclip.native.v1</string>
+            <key>PayloadUUID</key>
+            <string>87654321-4321-8765-CBA9-876543210987</string>
+            <key>PayloadDisplayName</key>
+            <string>iOS原生打卡助手</string>
+            <key>PayloadDescription</key>
+            <string>專為 iOS Safari 優化的實用打卡助手</string>
+            <key>Label</key>
+            <string>📱iOS打卡</string>
+            <key>URL</key>
+            <string>https://jomywu0203.github.io/mphasis-checkin/ios_native_checkin.html</string>
+            <key>IsRemovable</key>
+            <true/>
+            <key>FullScreen</key>
+            <true/>
+            <key>Precomposed</key>
+            <false/>
+        </dict>
+    </array>
+</dict>
+</plist>
