@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>⏰ iOS 排程打卡 (修復版)</title>
+    
+    <!-- iOS PWA 優化 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="排程打卡修復版">
+    <meta name="theme-color" content="#FF6B35">
+    
+    <style>
+        :root {
+            --primary-color: #FF6B35;
+            --secondary-color: #F7931E;
+            --success-color: #34C759;
+            --danger-color: #FF3B30;
+            --info-color: #007AFF;
+            --warning-color: #FF9500;
+            --gray-color: #8E8E93;
+            --light-gray: #F2F2F7;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+            background: var(--light-gray);
+            color: #000;
+            min-height: 100vh;
+            padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom) 16px;
+        }
+
+        .container {
+            max-width: 390px;
+            margin: 0 auto;
+        }
+
+        /* 標題區域 */
+        .header {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-align: center;
+            padding: 24px 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(255, 107, 53, 0.3);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        /* 卡片樣式 */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #000;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title .icon {
+            margin-right: 8px;
+            font-size: 22px;
+        }
+
+        /* 時間顯示 */
+        .time-display {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .current-time {
+            font-size: 36px;
+            font-weight: 200;
+            color: #000;
+            margin-bottom: 6px;
+            font-feature-settings: "tnum";
+        }
+
+        .current-date {
+            font-size: 15px;
+            color: var(--gray-color);
+            margin-bottom: 12px;
+        }
+
+        .next-checkin {
+            background: var(--info-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        /* 按鈕樣式 */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 17px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            margin: 12px 0;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(52, 199, 89, 0.3);
+        }
+
+        .btn-info {
+            background: var(--info-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 149, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            opacity: 0.8;
+        }
+
+        /* 輸入框樣式 */
+        .form-group {
+            margin: 16px 0;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 16px;
+            font-weight: 500;
+            color: #000;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 2px solid #E5E5EA;
+            border-radius: 10px;
+            background: #FAFAFA;
+            transition: border-color 0.2s ease;
+            -webkit-appearance: none;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: white;
+        }
+
+        /* 週間選擇器 */
+        .week-selector {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .day-btn {
+            padding: 12px 8px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 2px solid #E5E5EA;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+        }
+
+        .day-btn.selected {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .day-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 排除日期列表 */
+        .exclude-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #E5E5EA;
+            border-radius: 10px;
+            background: #FAFAFA;
+        }
+
+        .exclude-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #E5E5EA;
+        }
+
+        .exclude-item:last-child {
+            border-bottom: none;
+        }
+
+        .exclude-date {
+            font-weight: 500;
+            color: #000;
+        }
+
+        .exclude-reason {
+            font-size: 14px;
+            color: var(--gray-color);
+        }
+
+        .remove-btn {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* 狀態指示器 */
+        .status {
+            padding: 16px;
+            border-radius: 12px;
+            margin: 16px 0;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background: #E8F5E8;
+            color: #1B5E20;
+            border: 2px solid var(--success-color);
+        }
+
+        .status-info {
+            background: #E3F2FD;
+            color: #0D47A1;
+            border: 2px solid var(--info-color);
+        }
+
+        .status-warning {
+            background: #FFF3E0;
+            color: #E65100;
+            border: 2px solid var(--warning-color);
+        }
+
+        .status-error {
+            background: #FFEBEE;
+            color: #C62828;
+            border: 2px solid var(--danger-color);
+        }
+
+        /* 排程狀態 */
+        .schedule-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: #F8F9FA;
+            border-radius: 12px;
+            margin: 16px 0;
+        }
+
+        .schedule-info {
+            flex: 1;
+        }
+
+        .schedule-title {
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 4px;
+        }
+
+        .schedule-detail {
+            font-size: 14px;
+            color: var(--gray-color);
+        }
+
+        .toggle-switch {
+            width: 60px;
+            height: 32px;
+            background: #E5E5EA;
+            border-radius: 16px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--success-color);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            width: 28px;
+            height: 28px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(28px);
+        }
+
+        /* 提醒方式選擇 */
+        .reminder-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .method-card {
+            background: #F8F9FA;
+            border: 2px solid #E5E5EA;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .method-card.selected {
+            border-color: var(--primary-color);
+            background: rgba(255, 107, 53, 0.1);
+        }
+
+        .method-card .icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .method-card .title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .method-card .desc {
+            font-size: 12px;
+            color: var(--gray-color);
+        }
+
+        /* 視覺提醒樣式 */
+        .visual-reminder {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 107, 53, 0.95);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .reminder-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 1s infinite;
+        }
+
+        .reminder-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .reminder-message {
+            font-size: 18px;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        .reminder-actions {
+            display: flex;
+            gap: 16px;
+        }
+
+        .reminder-btn {
+            padding: 16px 32px;
+            font-size: 18px;
+            font-weight: 600;
+            border: 2px solid white;
+            border-radius: 12px;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .reminder-btn.primary {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        .reminder-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 隱藏類 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 動畫效果 */
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 標題 -->
+        <div class="header">
+            <h1>⏰ 排程打卡 (修復版)</h1>
+            <p>解決 iOS 通知限制，多重提醒方式</p>
+        </div>
+
+        <!-- 時間顯示 -->
+        <div class="card">
+            <div class="time-display">
+                <div class="current-time" id="timeDisplay">--:--</div>
+                <div class="current-date" id="dateDisplay">載入中...</div>
+                <div class="next-checkin" id="nextCheckin">下次打卡：未設定</div>
+            </div>
+        </div>
+
+        <!-- 排程控制 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">🎛️</span>
+                排程控制
+            </div>
+            
+            <div class="schedule-status">
+                <div class="schedule-info">
+                    <div class="schedule-title">打卡提醒</div>
+                    <div class="schedule-detail" id="scheduleDetail">點擊開關啟用排程</div>
+                </div>
+                <div class="toggle-switch" id="scheduleToggle" onclick="toggleSchedule()"></div>
+            </div>
+            
+            <!-- 瀏覽器兼容性檢查 -->
+            <div id="browserCompatibility" class="status status-info">
+                🔍 正在檢查瀏覽器支援功能...
+            </div>
+        </div>
+
+        <!-- 提醒方式選擇 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">🔔</span>
+                提醒方式選擇
+            </div>
+            
+            <div class="status status-warning">
+                <strong>📱 iOS Safari 限制說明：</strong><br>
+                由於 iOS Safari 的安全限制，系統通知功能可能不可用。<br>
+                請選擇適合的替代提醒方式：
+            </div>
+            
+            <div class="reminder-methods">
+                <div class="method-card" id="visualMethod" onclick="selectReminderMethod('visual')">
+                    <span class="icon">👁️</span>
+                    <div class="title">視覺提醒</div>
+                    <div class="desc">全屏閃爍提醒</div>
+                </div>
+                
+                <div class="method-card" id="soundMethod" onclick="selectReminderMethod('sound')">
+                    <span class="icon">🔊</span>
+                    <div class="title">聲音提醒</div>
+                    <div class="desc">語音播報提醒</div>
+                </div>
+                
+                <div class="method-card" id="vibrationMethod" onclick="selectReminderMethod('vibration')">
+                    <span class="icon">📳</span>
+                    <div class="title">振動提醒</div>
+                    <div class="desc">設備振動提醒</div>
+                </div>
+                
+                <div class="method-card" id="calendarMethod" onclick="selectReminderMethod('calendar')">
+                    <span class="icon">📅</span>
+                    <div class="title">日曆提醒</div>
+                    <div class="desc">系統日曆事件</div>
+                </div>
+            </div>
+            
+            <button class="btn btn-info" onclick="testSelectedMethod()">
+                🧪 測試選定的提醒方式
+            </button>
+        </div>
+
+        <!-- 基本設定 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">⚙️</span>
+                基本設定
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">打卡時間</label>
+                <input type="time" class="form-input" id="checkinTime" value="09:00">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">提前提醒（分鐘）</label>
+                <select class="form-input" id="reminderMinutes">
+                    <option value="0">準時提醒</option>
+                    <option value="5" selected>提前 5 分鐘</option>
+                    <option value="10">提前 10 分鐘</option>
+                    <option value="15">提前 15 分鐘</option>
+                    <option value="30">提前 30 分鐘</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">打卡網址</label>
+                <input type="url" class="form-input" id="checkinUrl" 
+                       value="https://enterprise-apps.mphasis.com/ess/v1/#/home">
+            </div>
+            
+            <button class="btn btn-success" onclick="saveBasicSettings()">
+                💾 儲存基本設定
+            </button>
+        </div>
+
+        <!-- 週間排程 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">📅</span>
+                週間排程
+            </div>
+            
+            <div class="form-label">選擇需要打卡的日子：</div>
+            <div class="week-selector">
+                <div class="day-btn" data-day="1" onclick="toggleDay(1)">一</div>
+                <div class="day-btn" data-day="2" onclick="toggleDay(2)">二</div>
+                <div class="day-btn" data-day="3" onclick="toggleDay(3)">三</div>
+                <div class="day-btn" data-day="4" onclick="toggleDay(4)">四</div>
+                <div class="day-btn" data-day="5" onclick="toggleDay(5)">五</div>
+                <div class="day-btn" data-day="6" onclick="toggleDay(6)">六</div>
+                <div class="day-btn" data-day="0" onclick="toggleDay(0)">日</div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="saveWeeklySchedule()">
+                📅 儲存週間排程
+            </button>
+        </div>
+
+        <!-- 排除日期 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">🚫</span>
+                排除日期設定
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">選擇排除日期</label>
+                <input type="date" class="form-input" id="excludeDate">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">排除原因</label>
+                <select class="form-input" id="excludeReason">
+                    <option value="假日">假日</option>
+                    <option value="請假">請假</option>
+                    <option value="出差">出差</option>
+                    <option value="會議">會議</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-warning" onclick="addExcludeDate()">
+                ➕ 新增排除日期
+            </button>
+            
+            <div class="form-label" style="margin-top: 20px;">已排除的日期：</div>
+            <div class="exclude-list" id="excludeList">
+                <div style="padding: 20px; text-align: center; color: var(--gray-color);">
+                    尚未設定任何排除日期
+                </div>
+            </div>
+            
+            <button class="btn btn-info" onclick="loadCommonHolidays()">
+                📋 載入常見假日
+            </button>
+        </div>
+
+        <!-- iOS 替代方案 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">📱</span>
+                iOS 系統整合
+            </div>
+            
+            <div class="status status-info">
+                <strong>📅 建議使用系統功能：</strong><br>
+                由於 iOS Safari 限制，建議使用以下系統級提醒：
+            </div>
+            
+            <button class="btn btn-primary" onclick="generateCalendarFile()">
+                📅 下載日曆檔案
+            </button>
+            
+            <button class="btn btn-warning" onclick="showAlarmInstructions()">
+                ⏰ 設定系統鬧鐘
+            </button>
+            
+            <button class="btn btn-info" onclick="createShortcuts()">
+                🔗 建立 Siri 捷徑
+            </button>
+        </div>
+
+        <!-- 手動操作 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">🎯</span>
+                手動操作
+            </div>
+            
+            <button class="btn btn-success" onclick="manualCheckin()">
+                🎯 立即打卡
+            </button>
+            
+            <button class="btn btn-info" onclick="testReminder()">
+                🧪 測試提醒功能
+            </button>
+        </div>
+
+        <!-- 狀態訊息區域 -->
+        <div id="statusArea"></div>
+    </div>
+
+    <!-- 視覺提醒覆蓋層 -->
+    <div class="visual-reminder hidden" id="visualReminder">
+        <div class="reminder-icon">🎯</div>
+        <div class="reminder-title">打卡時間到了！</div>
+        <div class="reminder-message">
+            現在是打卡時間，請點擊下方按鈕開啟打卡頁面
+        </div>
+        <div class="reminder-actions">
+            <button class="reminder-btn primary" onclick="manualCheckin(); hideVisualReminder();">
+                立即打卡
+            </button>
+            <button class="reminder-btn" onclick="snoozeReminder();">
+                稍後提醒
+            </button>
+            <button class="reminder-btn" onclick="hideVisualReminder();">
+                關閉
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 全域變數
+        var settings = {
+            checkinTime: '09:00',
+            reminderMinutes: 5,
+            checkinUrl: 'https://enterprise-apps.mphasis.com/ess/v1/#/home',
+            weeklyDays: [1, 2, 3, 4, 5], // 預設週一到週五
+            excludeDates: [],
+            scheduleEnabled: false,
+            reminderMethod: 'visual' // visual, sound, vibration, calendar
+        };
+
+        var scheduleInterval = null;
+        var browserCapabilities = {
+            notification: false,
+            speechSynthesis: false,
+            vibration: false,
+            audioContext: false
+        };
+
+        // 初始化
+        function initApp() {
+            console.log('⏰ 排程打卡修復版啟動');
+            checkBrowserCapabilities();
+            loadSettings();
+            updateTime();
+            setInterval(updateTime, 1000);
+            updateWeeklyDisplay();
+            updateExcludeList();
+            updateScheduleStatus();
+            selectReminderMethod(settings.reminderMethod);
+            showMessage('✅ 排程系統已就緒！', 'success');
+        }
+
+        // 檢查瀏覽器功能支援
+        function checkBrowserCapabilities() {
+            var statusElement = document.getElementById('browserCompatibility');
+            var capabilities = [];
+            var issues = [];
+            
+            // 檢查 Notification API
+            if ('Notification' in window) {
+                browserCapabilities.notification = true;
+                capabilities.push('✅ 系統通知');
+            } else {
+                browserCapabilities.notification = false;
+                issues.push('❌ 系統通知不支援');
+            }
+            
+            // 檢查 Speech Synthesis API
+            if ('speechSynthesis' in window) {
+                browserCapabilities.speechSynthesis = true;
+                capabilities.push('✅ 語音播報');
+            } else {
+                browserCapabilities.speechSynthesis = false;
+                issues.push('❌ 語音播報不支援');
+            }
+            
+            // 檢查 Vibration API
+            if ('vibrate' in navigator) {
+                browserCapabilities.vibration = true;
+                capabilities.push('✅ 設備振動');
+            } else {
+                browserCapabilities.vibration = false;
+                issues.push('❌ 設備振動不支援');
+            }
+            
+            // 檢查 Audio Context
+            try {
+                var audioContext = window.AudioContext || window.webkitAudioContext;
+                if (audioContext) {
+                    browserCapabilities.audioContext = true;
+                    capabilities.push('✅ 音效播放');
+                } else {
+                    browserCapabilities.audioContext = false;
+                    issues.push('❌ 音效播放不支援');
+                }
+            } catch (e) {
+                browserCapabilities.audioContext = false;
+                issues.push('❌ 音效播放不支援');
+            }
+            
+            // 更新狀態顯示
+            var statusText = '';
+            if (capabilities.length > 0) {
+                statusText += '<strong>支援功能：</strong><br>' + capabilities.join('<br>');
+            }
+            if (issues.length > 0) {
+                if (statusText) statusText += '<br><br>';
+                statusText += '<strong>限制功能：</strong><br>' + issues.join('<br>');
+            }
+            
+            statusElement.innerHTML = statusText;
+            
+            // 根據支援情況調整狀態樣式
+            if (issues.length === 0) {
+                statusElement.className = 'status status-success';
+            } else if (capabilities.length > 0) {
+                statusElement.className = 'status status-warning';
+            } else {
+                statusElement.className = 'status status-error';
+            }
+        }
+
+        // 更新時間顯示
+        function updateTime() {
+            try {
+                var now = new Date();
+                var hours = now.getHours().toString().padStart(2, '0');
+                var minutes = now.getMinutes().toString().padStart(2, '0');
+                var timeString = hours + ':' + minutes;
+                
+                var options = { 
+                    year: 'numeric',
+                    month: 'long', 
+                    day: 'numeric',
+                    weekday: 'long'
+                };
+                var dateString = now.toLocaleDateString('zh-TW', options);
+                
+                document.getElementById('timeDisplay').textContent = timeString;
+                document.getElementById('dateDisplay').textContent = dateString;
+                
+                updateNextCheckinTime();
+            } catch (error) {
+                console.error('時間更新失敗:', error);
+            }
+        }
+
+        // 更新下次打卡時間
+        function updateNextCheckinTime() {
+            var nextCheckin = calculateNextCheckin();
+            var nextCheckinElement = document.getElementById('nextCheckin');
+            
+            if (nextCheckin && settings.scheduleEnabled) {
+                var timeString = nextCheckin.toLocaleDateString('zh-TW', {
+                    month: 'short',
+                    day: 'numeric',
+                    weekday: 'short'
+                }) + ' ' + settings.checkinTime;
+                nextCheckinElement.textContent = '下次打卡：' + timeString;
+                nextCheckinElement.style.background = 'var(--success-color)';
+            } else {
+                nextCheckinElement.textContent = settings.scheduleEnabled ? '今日無需打卡' : '排程未啟用';
+                nextCheckinElement.style.background = 'var(--gray-color)';
+            }
+        }
+
+        // 計算下次打卡時間
+        function calculateNextCheckin() {
+            var now = new Date();
+            var today = now.getDay();
+            
+            // 檢查今天是否需要打卡
+            if (settings.weeklyDays.includes(today)) {
+                var todayCheckin = new Date();
+                var timeParts = settings.checkinTime.split(':');
+                todayCheckin.setHours(parseInt(timeParts[0]), parseInt(timeParts[1]), 0, 0);
+                
+                // 如果今天的打卡時間還沒過，且今天不在排除列表中
+                if (now < todayCheckin && !isDateExcluded(now)) {
+                    return todayCheckin;
+                }
+            }
+            
+            // 找下一個打卡日
+            for (var i = 1; i <= 7; i++) {
+                var nextDate = new Date(now);
+                nextDate.setDate(now.getDate() + i);
+                
+                if (settings.weeklyDays.includes(nextDate.getDay()) && !isDateExcluded(nextDate)) {
+                    return nextDate;
+                }
+            }
+            
+            return null;
+        }
+
+        // 檢查日期是否被排除
+        function isDateExcluded(date) {
+            var dateString = date.toISOString().split('T')[0];
+            return settings.excludeDates.some(function(exclude) {
+                return exclude.date === dateString;
+            });
+        }
+
+        // 切換排程開關
+        function toggleSchedule() {
+            settings.scheduleEnabled = !settings.scheduleEnabled;
+            
+            if (settings.scheduleEnabled) {
+                startSchedule();
+            } else {
+                stopSchedule();
+            }
+            
+            updateScheduleStatus();
+            saveSettings();
+        }
+
+        // 啟動排程
+        function startSchedule() {
+            stopSchedule(); // 先停止現有排程
+            
+            scheduleInterval = setInterval(function() {
+                checkScheduleTime();
+            }, 60000); // 每分鐘檢查一次
+            
+            showMessage('✅ 打卡排程已啟動！使用 ' + getReminderMethodName() + ' 提醒', 'success');
+        }
+
+        // 停止排程
+        function stopSchedule() {
+            if (scheduleInterval) {
+                clearInterval(scheduleInterval);
+                scheduleInterval = null;
+            }
+        }
+
+        // 檢查排程時間
+        function checkScheduleTime() {
+            var now = new Date();
+            var today = now.getDay();
+            var currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
+                             now.getMinutes().toString().padStart(2, '0');
+            
+            // 計算提醒時間
+            var timeParts = settings.checkinTime.split(':');
+            var reminderTime = new Date();
+            reminderTime.setHours(parseInt(timeParts[0]), parseInt(timeParts[1]) - settings.reminderMinutes, 0, 0);
+            
+            var reminderTimeString = reminderTime.getHours().toString().padStart(2, '0') + ':' + 
+                                   reminderTime.getMinutes().toString().padStart(2, '0');
+            
+            // 檢查是否該提醒
+            if (settings.weeklyDays.includes(today) && 
+                currentTime === reminderTimeString && 
+                !isDateExcluded(now)) {
+                
+                triggerCheckinReminder();
+            }
+        }
+
+        // 觸發打卡提醒
+        function triggerCheckinReminder() {
+            switch (settings.reminderMethod) {
+                case 'visual':
+                    showVisualReminder();
+                    break;
+                case 'sound':
+                    playSoundReminder();
+                    break;
+                case 'vibration':
+                    triggerVibration();
+                    break;
+                case 'calendar':
+                    showCalendarReminder();
+                    break;
+                default:
+                    showVisualReminder();
+            }
+        }
+
+        // 顯示視覺提醒
+        function showVisualReminder() {
+            document.getElementById('visualReminder').classList.remove('hidden');
+            
+            // 嘗試進入全螢幕模式
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(function(error) {
+                    console.log('無法進入全螢幕模式:', error);
+                });
+            }
+        }
+
+        // 隱藏視覺提醒
+        function hideVisualReminder() {
+            document.getElementById('visualReminder').classList.add('hidden');
+            
+            // 退出全螢幕模式
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(function(error) {
+                    console.log('無法退出全螢幕模式:', error);
+                });
+            }
+        }
+
+        // 延遲提醒
+        function snoozeReminder() {
+            hideVisualReminder();
+            setTimeout(function() {
+                triggerCheckinReminder();
+            }, 5 * 60 * 1000); // 5分鐘後再次提醒
+        }
+
+        // 播放聲音提醒
+        function playSoundReminder() {
+            if (browserCapabilities.speechSynthesis) {
+                var reminderText = settings.reminderMinutes > 0 ? 
+                    '再 ' + settings.reminderMinutes + ' 分鐘該打卡了' : '現在該打卡了';
+                
+                var utterance = new SpeechSynthesisUtterance(reminderText);
+                utterance.lang = 'zh-TW';
+                utterance.rate = 0.8;
+                utterance.pitch = 1.2;
+                speechSynthesis.speak(utterance);
+            }
+            
+            // 備用音效
+            if (browserCapabilities.audioContext) {
+                playBeepSound();
+            }
+            
+            showMessage('🔊 語音提醒已播放', 'info');
+        }
+
+        // 播放嗶聲
+        function playBeepSound() {
+            try {
+                var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                var oscillator = audioContext.createOscillator();
+                var gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 1);
+            } catch (error) {
+                console.error('播放音效失敗:', error);
+            }
+        }
+
+        // 觸發振動
+        function triggerVibration() {
+            if (browserCapabilities.vibration) {
+                // 振動模式：200ms 開, 100ms 停, 200ms 開
+                navigator.vibrate([200, 100, 200, 100, 200]);
+                showMessage('📳 設備振動已觸發', 'info');
+            } else {
+                showMessage('❌ 此設備不支援振動功能', 'error');
+            }
+        }
+
+        // 顯示日曆提醒
+        function showCalendarReminder() {
+            alert('📅 打卡提醒\n\n請開啟日曆檢查打卡事件，或點擊確定開啟打卡頁面。');
+            if (confirm('是否要立即開啟打卡頁面？')) {
+                manualCheckin();
+            }
+        }
+
+        // 選擇提醒方式
+        function selectReminderMethod(method) {
+            // 移除所有選中狀態
+            document.querySelectorAll('.method-card').forEach(function(card) {
+                card.classList.remove('selected');
+            });
+            
+            // 設定選中狀態
+            document.getElementById(method + 'Method').classList.add('selected');
+            settings.reminderMethod = method;
+            saveSettings();
+            
+            showMessage('✅ 已選擇 ' + getReminderMethodName() + ' 提醒方式', 'success');
+        }
+
+        // 獲取提醒方式名稱
+        function getReminderMethodName() {
+            switch (settings.reminderMethod) {
+                case 'visual': return '視覺提醒';
+                case 'sound': return '聲音提醒';
+                case 'vibration': return '振動提醒';
+                case 'calendar': return '日曆提醒';
+                default: return '未知';
+            }
+        }
+
+        // 測試選定的提醒方式
+        function testSelectedMethod() {
+            showMessage('🧪 測試 ' + getReminderMethodName() + '...', 'info');
+            setTimeout(function() {
+                triggerCheckinReminder();
+            }, 1000);
+        }
+
+        // 手動打卡
+        function manualCheckin() {
+            showMessage('🚀 正在開啟打卡頁面...', 'info');
+            
+            var popup = window.open(settings.checkinUrl, 'checkin', 'width=414,height=736');
+            
+            if (popup) {
+                showMessage('✅ 打卡頁面已開啟！請完成打卡。', 'success');
+            } else {
+                showMessage('❌ 無法開啟頁面，請檢查彈窗設定', 'error');
+            }
+        }
+
+        // 更新排程狀態顯示
+        function updateScheduleStatus() {
+            var toggle = document.getElementById('scheduleToggle');
+            var detail = document.getElementById('scheduleDetail');
+            
+            if (settings.scheduleEnabled) {
+                toggle.classList.add('active');
+                detail.textContent = '排程已啟用 - ' + settings.checkinTime + ' (' + getReminderMethodName() + ')';
+            } else {
+                toggle.classList.remove('active');
+                detail.textContent = '點擊開關啟用排程';
+            }
+        }
+
+        // 週間日期切換
+        function toggleDay(day) {
+            var dayBtn = document.querySelector('[data-day="' + day + '"]');
+            var index = settings.weeklyDays.indexOf(day);
+            
+            if (index > -1) {
+                settings.weeklyDays.splice(index, 1);
+                dayBtn.classList.remove('selected');
+            } else {
+                settings.weeklyDays.push(day);
+                dayBtn.classList.add('selected');
+            }
+            
+            updateNextCheckinTime();
+        }
+
+        // 更新週間顯示
+        function updateWeeklyDisplay() {
+            settings.weeklyDays.forEach(function(day) {
+                var dayBtn = document.querySelector('[data-day="' + day + '"]');
+                if (dayBtn) {
+                    dayBtn.classList.add('selected');
+                }
+            });
+        }
+
+        // 新增排除日期
+        function addExcludeDate() {
+            var dateInput = document.getElementById('excludeDate');
+            var reasonSelect = document.getElementById('excludeReason');
+            
+            var date = dateInput.value;
+            var reason = reasonSelect.value;
+            
+            if (!date) {
+                showMessage('❌ 請選擇日期', 'error');
+                return;
+            }
+            
+            // 檢查是否已存在
+            var exists = settings.excludeDates.some(function(exclude) {
+                return exclude.date === date;
+            });
+            
+            if (exists) {
+                showMessage('⚠️ 此日期已在排除清單中', 'warning');
+                return;
+            }
+            
+            settings.excludeDates.push({
+                date: date,
+                reason: reason
+            });
+            
+            updateExcludeList();
+            saveSettings();
+            
+            // 清空輸入
+            dateInput.value = '';
+            
+            showMessage('✅ 排除日期已新增', 'success');
+        }
+
+        // 移除排除日期
+        function removeExcludeDate(date) {
+            settings.excludeDates = settings.excludeDates.filter(function(exclude) {
+                return exclude.date !== date;
+            });
+            
+            updateExcludeList();
+            saveSettings();
+            showMessage('✅ 排除日期已移除', 'success');
+        }
+
+        // 更新排除清單顯示
+        function updateExcludeList() {
+            var listElement = document.getElementById('excludeList');
+            
+            if (settings.excludeDates.length === 0) {
+                listElement.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--gray-color);">尚未設定任何排除日期</div>';
+                return;
+            }
+            
+            var html = '';
+            settings.excludeDates.sort(function(a, b) {
+                return new Date(a.date) - new Date(b.date);
+            }).forEach(function(exclude) {
+                var date = new Date(exclude.date);
+                var dateString = date.toLocaleDateString('zh-TW', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    weekday: 'short'
+                });
+                
+                html += '<div class="exclude-item">';
+                html += '<div>';
+                html += '<div class="exclude-date">' + dateString + '</div>';
+                html += '<div class="exclude-reason">' + exclude.reason + '</div>';
+                html += '</div>';
+                html += '<button class="remove-btn" onclick="removeExcludeDate(\'' + exclude.date + '\')">移除</button>';
+                html += '</div>';
+            });
+            
+            listElement.innerHTML = html;
+        }
+
+        // 載入常見假日
+        function loadCommonHolidays() {
+            var currentYear = new Date().getFullYear();
+            var holidays = [
+                { date: currentYear + '-01-01', reason: '元旦' },
+                { date: currentYear + '-02-10', reason: '農曆新年' },
+                { date: currentYear + '-02-11', reason: '農曆新年' },
+                { date: currentYear + '-02-12', reason: '農曆新年' },
+                { date: currentYear + '-04-04', reason: '兒童節' },
+                { date: currentYear + '-04-05', reason: '清明節' },
+                { date: currentYear + '-05-01', reason: '勞動節' },
+                { date: currentYear + '-06-10', reason: '端午節' },
+                { date: currentYear + '-09-17', reason: '中秋節' },
+                { date: currentYear + '-10-10', reason: '國慶日' }
+            ];
+            
+            var added = 0;
+            holidays.forEach(function(holiday) {
+                var exists = settings.excludeDates.some(function(exclude) {
+                    return exclude.date === holiday.date;
+                });
+                
+                if (!exists) {
+                    settings.excludeDates.push(holiday);
+                    added++;
+                }
+            });
+            
+            if (added > 0) {
+                updateExcludeList();
+                saveSettings();
+                showMessage('✅ 已新增 ' + added + ' 個假日到排除清單', 'success');
+            } else {
+                showMessage('ℹ️ 常見假日已在排除清單中', 'info');
+            }
+        }
+
+        // 產生日曆檔案
+        function generateCalendarFile() {
+            var icalContent = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//iOS排程打卡//NONSGML//EN\n';
+            
+            settings.weeklyDays.forEach(function(day) {
+                var dayName = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][day];
+                
+                icalContent += 'BEGIN:VEVENT\n';
+                icalContent += 'SUMMARY:🎯 Mphasis 打卡提醒\n';
+                icalContent += 'DESCRIPTION:記得要打卡！\\n打卡網址：' + settings.checkinUrl + '\n';
+                icalContent += 'DTSTART:' + formatTimeForCal(settings.checkinTime, -settings.reminderMinutes) + '\n';
+                icalContent += 'DTEND:' + formatTimeForCal(settings.checkinTime, -settings.reminderMinutes + 15) + '\n';
+                icalContent += 'RRULE:FREQ=WEEKLY;BYDAY=' + dayName + '\n';
+                icalContent += 'BEGIN:VALARM\n';
+                icalContent += 'TRIGGER:-PT5M\n';
+                icalContent += 'ACTION:DISPLAY\n';
+                icalContent += 'DESCRIPTION:準備打卡！\n';
+                icalContent += 'END:VALARM\n';
+                icalContent += 'END:VEVENT\n';
+            });
+            
+            icalContent += 'END:VCALENDAR';
+            
+            var blob = new Blob([icalContent], { type: 'text/calendar' });
+            var url = URL.createObjectURL(blob);
+            
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'mphasis-checkin-schedule.ics';
+            link.click();
+            
+            showMessage('✅ 日曆檔案已下載！請在檔案應用中開啟並加入日曆。', 'success');
+        }
+
+        // 格式化時間給日曆用
+        function formatTimeForCal(timeString, offsetMinutes) {
+            var today = new Date();
+            var timeParts = timeString.split(':');
+            var date = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 
+                               parseInt(timeParts[0]), parseInt(timeParts[1]) + (offsetMinutes || 0));
+            
+            return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        }
+
+        // 顯示鬧鐘設定說明
+        function showAlarmInstructions() {
+            var alarmInstructions = '📱 設定 iOS 鬧鐘步驟：\n\n';
+            
+            settings.weeklyDays.forEach(function(day) {
+                var dayNames = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
+                var timeParts = settings.checkinTime.split(':');
+                var reminderHour = parseInt(timeParts[0]);
+                var reminderMinute = parseInt(timeParts[1]) - settings.reminderMinutes;
+                
+                if (reminderMinute < 0) {
+                    reminderMinute += 60;
+                    reminderHour -= 1;
+                }
+                
+                var reminderTime = reminderHour.toString().padStart(2, '0') + ':' + 
+                                 reminderMinute.toString().padStart(2, '0');
+                
+                alarmInstructions += dayNames[day] + '：' + reminderTime + '\n';
+            });
+            
+            alarmInstructions += '\n1. 開啟「時鐘」應用\n';
+            alarmInstructions += '2. 點擊「鬧鐘」標籤\n';
+            alarmInstructions += '3. 點擊右上角「+」\n';
+            alarmInstructions += '4. 設定上述時間\n';
+            alarmInstructions += '5. 選擇重複日期\n';
+            alarmInstructions += '6. 標籤設為「Mphasis打卡」';
+            
+            alert(alarmInstructions);
+            
+            // 嘗試開啟時鐘應用
+            try {
+                window.location.href = 'clock-alarm://';
+            } catch (error) {
+                console.log('無法開啟時鐘應用:', error);
+            }
+        }
+
+        // 建立 Siri 捷徑
+        function createShortcuts() {
+            var shortcutInstructions = '📱 建立 Siri 捷徑步驟：\n\n';
+            shortcutInstructions += '1. 開啟「捷徑」應用\n';
+            shortcutInstructions += '2. 點擊右上角「+」\n';
+            shortcutInstructions += '3. 點擊「加入動作」\n';
+            shortcutInstructions += '4. 搜尋「開啟 URL」\n';
+            shortcutInstructions += '5. 輸入網址：' + settings.checkinUrl + '\n';
+            shortcutInstructions += '6. 點擊「下一步」\n';
+            shortcutInstructions += '7. 命名為「Mphasis打卡」\n';
+            shortcutInstructions += '8. 點擊「完成」\n\n';
+            shortcutInstructions += '完成後可對 Siri 說：「嘿 Siri，Mphasis打卡」';
+            
+            alert(shortcutInstructions);
+        }
+
+        // 測試提醒功能
+        function testReminder() {
+            triggerCheckinReminder();
+        }
+
+        // 儲存基本設定
+        function saveBasicSettings() {
+            settings.checkinTime = document.getElementById('checkinTime').value;
+            settings.reminderMinutes = parseInt(document.getElementById('reminderMinutes').value);
+            settings.checkinUrl = document.getElementById('checkinUrl').value.trim();
+            
+            if (!settings.checkinUrl) {
+                showMessage('❌ 請輸入打卡網址', 'error');
+                return;
+            }
+            
+            saveSettings();
+            updateNextCheckinTime();
+            showMessage('✅ 基本設定已儲存！', 'success');
+        }
+
+        // 儲存週間排程
+        function saveWeeklySchedule() {
+            if (settings.weeklyDays.length === 0) {
+                showMessage('⚠️ 請至少選擇一天', 'warning');
+                return;
+            }
+            
+            saveSettings();
+            updateNextCheckinTime();
+            showMessage('✅ 週間排程已儲存！', 'success');
+        }
+
+        // 儲存設定到 localStorage
+        function saveSettings() {
+            try {
+                localStorage.setItem('ios_scheduler_fixed_settings', JSON.stringify(settings));
+            } catch (error) {
+                console.error('儲存設定失敗:', error);
+                showMessage('❌ 儲存設定失敗', 'error');
+            }
+        }
+
+        // 載入設定
+        function loadSettings() {
+            try {
+                var saved = localStorage.getItem('ios_scheduler_fixed_settings');
+                if (saved) {
+                    var savedSettings = JSON.parse(saved);
+                    settings = Object.assign(settings, savedSettings);
+                    
+                    // 更新 UI
+                    document.getElementById('checkinTime').value = settings.checkinTime;
+                    document.getElementById('reminderMinutes').value = settings.reminderMinutes;
+                    document.getElementById('checkinUrl').value = settings.checkinUrl;
+                }
+            } catch (error) {
+                console.error('載入設定失敗:', error);
+            }
+        }
+
+        // 顯示訊息
+        function showMessage(message, type) {
+            var statusArea = document.getElementById('statusArea');
+            var className = 'status-' + (type || 'info');
+            
+            statusArea.innerHTML = '<div class="status ' + className + ' fade-in">' + message + '</div>';
+            
+            setTimeout(function() {
+                if (statusArea.innerHTML.includes(message)) {
+                    statusArea.innerHTML = '';
+                }
+            }, 5000);
+        }
+
+        // 頁面載入完成後初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+
+        // 頁面卸載時停止排程
+        window.addEventListener('beforeunload', function() {
+            stopSchedule();
+        });
+
+        console.log('⏰ iOS 排程打卡修復版已載入');
+    </script>
+</body>
+</html>

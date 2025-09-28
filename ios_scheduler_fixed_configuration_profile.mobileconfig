@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadDisplayName</key>
+    <string>iOS排程打卡修復版</string>
+    <key>PayloadDescription</key>
+    <string>修復通知權限問題，提供多重提醒方式的排程打卡系統</string>
+    <key>PayloadIdentifier</key>
+    <string>com.mphasis.ios.scheduler.fixed.v1</string>
+    <key>PayloadOrganization</key>
+    <string>Mphasis Limited</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>G1H1I1J1-K1L1-6789-0123-678901234567</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+    <key>PayloadScope</key>
+    <string>User</string>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>PayloadType</key>
+            <string>com.apple.webClip.managed</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>PayloadIdentifier</key>
+            <string>com.mphasis.ios.scheduler.fixed.webclip.v1</string>
+            <key>PayloadUUID</key>
+            <string>H2I2J2K2-L2M2-7890-1234-789012345678</string>
+            <key>PayloadDisplayName</key>
+            <string>排程打卡修復版</string>
+            <key>PayloadDescription</key>
+            <string>修復通知問題的排程打卡系統</string>
+            <key>Label</key>
+            <string>⏰修復版</string>
+            <key>URL</key>
+            <string>https://jomywu0203.github.io/mphasis-checkin/ios_scheduler_fixed.html</string>
+            <key>IsRemovable</key>
+            <true/>
+            <key>FullScreen</key>
+            <true/>
+            <key>Precomposed</key>
+            <false/>
+        </dict>
+    </array>
+</dict>
+</plist>
