@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>📱 iOS 簡易打卡</title>
+    
+    <!-- iOS PWA 優化 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="iOS簡易打卡">
+    <meta name="theme-color" content="#007AFF">
+    
+    <style>
+        /* iOS 安全區域支援 */
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            /* 移除 iOS Safari 的點擊高亮 */
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+            /* 避免選取文字 */
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Icons', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #F2F2F7;
+            color: #000;
+            min-height: 100vh;
+            padding-top: var(--safe-area-inset-top);
+            padding-bottom: var(--safe-area-inset-bottom);
+        }
+
+        .container {
+            max-width: 375px;
+            margin: 0 auto;
+            padding: 20px 16px;
+        }
+
+        /* iOS 狀態列 */
+        .header {
+            background: #007AFF;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 122, 255, 0.3);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        /* 時間卡片 */
+        .time-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .current-time {
+            font-size: 42px;
+            font-weight: 200;
+            color: #000;
+            margin-bottom: 8px;
+            font-feature-settings: "tnum";
+        }
+
+        .current-date {
+            font-size: 16px;
+            color: #8E8E93;
+        }
+
+        /* 按鈕樣式 - 簡化版 */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            margin: 12px 0;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            /* iOS 專用觸控優化 */
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            /* 簡單的過渡效果 */
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .btn-primary {
+            background: #007AFF;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #34C759;
+            color: white;
+        }
+
+        .btn-tertiary {
+            background: #FF9500;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #FF3B30;
+            color: white;
+        }
+
+        /* iOS 觸控反饋 */
+        .btn:active {
+            transform: scale(0.98);
+            opacity: 0.8;
+        }
+
+        .btn-primary:active {
+            background: #0056CC;
+        }
+
+        .btn-secondary:active {
+            background: #28A745;
+        }
+
+        .btn-tertiary:active {
+            background: #CC7A00;
+        }
+
+        /* 卡片容器 */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #000;
+        }
+
+        /* 輸入框 */
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid #E5E5EA;
+            border-radius: 10px;
+            background: #F9F9F9;
+            margin: 8px 0;
+            /* iOS 專用 */
+            -webkit-appearance: none;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #007AFF;
+            background: white;
+        }
+
+        /* 狀態訊息 */
+        .message {
+            padding: 16px;
+            border-radius: 12px;
+            margin: 16px 0;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .message-success {
+            background: #E8F5E8;
+            color: #1B5E20;
+            border: 2px solid #34C759;
+        }
+
+        .message-error {
+            background: #FFEBEE;
+            color: #C62828;
+            border: 2px solid #FF3B30;
+        }
+
+        .message-info {
+            background: #E3F2FD;
+            color: #0D47A1;
+            border: 2px solid #007AFF;
+        }
+
+        /* 說明文字 */
+        .help-text {
+            font-size: 14px;
+            color: #8E8E93;
+            line-height: 1.4;
+            margin: 8px 0;
+        }
+
+        /* 隱藏類 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 載入動畫 */
+        .loading {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 標題 -->
+        <div class="header">
+            <h1>📱 iOS 簡易打卡</h1>
+            <p>專為 iPhone Safari 設計</p>
+        </div>
+
+        <!-- 時間顯示 -->
+        <div class="time-card">
+            <div class="current-time" id="timeDisplay">--:--</div>
+            <div class="current-date" id="dateDisplay">載入中...</div>
+        </div>
+
+        <!-- 主要功能 -->
+        <div class="card">
+            <h3>⚡ 快速打卡</h3>
+            
+            <!-- 簡化的按鈕，使用 onclick 而不是 addEventListener -->
+            <button class="btn btn-primary" onclick="openCheckinSite()">
+                🎯 立即打卡
+            </button>
+            
+            <button class="btn btn-secondary" onclick="copyCheckinUrl()">
+                📋 複製打卡網址
+            </button>
+            
+            <button class="btn btn-tertiary" onclick="showInstructions()">
+                📖 操作說明
+            </button>
+        </div>
+
+        <!-- 設定 -->
+        <div class="card">
+            <h3>⚙️ 基本設定</h3>
+            
+            <div class="help-text">打卡網址：</div>
+            <input type="url" class="input-field" id="checkinUrl" 
+                   value="https://enterprise-apps.mphasis.com/ess/v1/#/home">
+            
+            <div class="help-text">公司名稱：</div>
+            <input type="text" class="input-field" id="companyName" 
+                   value="Mphasis">
+            
+            <button class="btn btn-primary" onclick="saveSettings()">
+                💾 儲存設定
+            </button>
+        </div>
+
+        <!-- 訊息顯示區域 -->
+        <div id="messageArea"></div>
+
+        <!-- 操作說明 -->
+        <div class="card" id="instructionsCard" style="display: none;">
+            <h3>📖 使用說明</h3>
+            <div style="font-size: 16px; line-height: 1.6; color: #333;">
+                <strong>🎯 立即打卡：</strong><br>
+                點擊後會開啟打卡網站，請在新頁面中完成登入和打卡。<br><br>
+                
+                <strong>📋 複製網址：</strong><br>
+                將打卡網址複製到剪貼簿，可以在 Safari 中貼上使用。<br><br>
+                
+                <strong>💡 使用技巧：</strong><br>
+                • 建議將此頁面加入主畫面<br>
+                • 在 Safari 中點擊分享 → 加入主畫面<br>
+                • 每天使用主畫面圖示快速打卡<br>
+            </div>
+            
+            <button class="btn btn-secondary" onclick="hideInstructions()">
+                ✅ 我知道了
+            </button>
+        </div>
+
+        <!-- 測試區域 -->
+        <div class="card">
+            <h3>🧪 功能測試</h3>
+            <div class="help-text">測試按鈕是否正常工作</div>
+            
+            <button class="btn btn-secondary" onclick="testFunction()">
+                🔘 測試按鈕點擊
+            </button>
+            
+            <button class="btn btn-tertiary" onclick="testAlert()">
+                🔔 測試彈窗顯示
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 全域變數
+        var settings = {
+            checkinUrl: 'https://enterprise-apps.mphasis.com/ess/v1/#/home',
+            companyName: 'Mphasis'
+        };
+
+        // 初始化 - 使用最簡單的方式
+        function initApp() {
+            console.log('📱 iOS 簡易打卡應用啟動');
+            loadSettings();
+            updateTime();
+            setInterval(updateTime, 1000);
+            showMessage('✅ 應用已成功載入！', 'success');
+        }
+
+        // 更新時間顯示
+        function updateTime() {
+            try {
+                var now = new Date();
+                var hours = now.getHours().toString().padStart(2, '0');
+                var minutes = now.getMinutes().toString().padStart(2, '0');
+                var timeString = hours + ':' + minutes;
+                
+                var options = { 
+                    year: 'numeric',
+                    month: 'long', 
+                    day: 'numeric',
+                    weekday: 'long'
+                };
+                var dateString = now.toLocaleDateString('zh-TW', options);
+                
+                document.getElementById('timeDisplay').textContent = timeString;
+                document.getElementById('dateDisplay').textContent = dateString;
+            } catch (error) {
+                console.error('時間更新失敗:', error);
+                document.getElementById('timeDisplay').textContent = '時間錯誤';
+                document.getElementById('dateDisplay').textContent = '請重新載入';
+            }
+        }
+
+        // 開啟打卡網站
+        function openCheckinSite() {
+            showMessage('🚀 正在開啟打卡網站...', 'info');
+            
+            try {
+                var popup = window.open(settings.checkinUrl, '_blank');
+                
+                if (popup) {
+                    showMessage('✅ 打卡網站已開啟！請在新頁面中完成打卡。', 'success');
+                } else {
+                    showMessage('❌ 無法開啟網站，請允許彈窗或直接點擊下方複製的網址。', 'error');
+                    copyCheckinUrl();
+                }
+            } catch (error) {
+                console.error('開啟網站失敗:', error);
+                showMessage('❌ 開啟失敗，已為您複製網址，請手動在 Safari 中開啟。', 'error');
+                copyCheckinUrl();
+            }
+        }
+
+        // 複製打卡網址
+        function copyCheckinUrl() {
+            try {
+                // 嘗試使用現代 API
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(settings.checkinUrl).then(function() {
+                        showMessage('✅ 打卡網址已複製到剪貼簿！', 'success');
+                    }).catch(function(error) {
+                        fallbackCopy();
+                    });
+                } else {
+                    fallbackCopy();
+                }
+            } catch (error) {
+                fallbackCopy();
+            }
+        }
+
+        // 備用複製方法
+        function fallbackCopy() {
+            try {
+                var textArea = document.createElement('textarea');
+                textArea.value = settings.checkinUrl;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                var successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                if (successful) {
+                    showMessage('✅ 網址已複製！請在 Safari 中貼上開啟。', 'success');
+                } else {
+                    showMessage('📝 請手動複製此網址：' + settings.checkinUrl, 'info');
+                }
+            } catch (error) {
+                showMessage('📝 請手動複製此網址：' + settings.checkinUrl, 'info');
+            }
+        }
+
+        // 顯示說明
+        function showInstructions() {
+            document.getElementById('instructionsCard').style.display = 'block';
+            document.getElementById('instructionsCard').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 隱藏說明
+        function hideInstructions() {
+            document.getElementById('instructionsCard').style.display = 'none';
+        }
+
+        // 儲存設定
+        function saveSettings() {
+            try {
+                var checkinUrl = document.getElementById('checkinUrl').value.trim();
+                var companyName = document.getElementById('companyName').value.trim();
+                
+                if (!checkinUrl || !companyName) {
+                    showMessage('❌ 請填寫完整的設定資訊', 'error');
+                    return;
+                }
+                
+                // 簡單的網址驗證
+                if (!checkinUrl.startsWith('http://') && !checkinUrl.startsWith('https://')) {
+                    showMessage('❌ 請輸入完整的網址（以 http:// 或 https:// 開頭）', 'error');
+                    return;
+                }
+                
+                settings.checkinUrl = checkinUrl;
+                settings.companyName = companyName;
+                
+                // 儲存到 localStorage
+                localStorage.setItem('ios_simple_settings', JSON.stringify(settings));
+                
+                showMessage('✅ 設定已儲存！', 'success');
+            } catch (error) {
+                console.error('儲存設定失敗:', error);
+                showMessage('❌ 儲存失敗，請重試', 'error');
+            }
+        }
+
+        // 載入設定
+        function loadSettings() {
+            try {
+                var saved = localStorage.getItem('ios_simple_settings');
+                if (saved) {
+                    var parsedSettings = JSON.parse(saved);
+                    settings.checkinUrl = parsedSettings.checkinUrl || settings.checkinUrl;
+                    settings.companyName = parsedSettings.companyName || settings.companyName;
+                    
+                    // 更新 UI
+                    document.getElementById('checkinUrl').value = settings.checkinUrl;
+                    document.getElementById('companyName').value = settings.companyName;
+                }
+            } catch (error) {
+                console.error('載入設定失敗:', error);
+            }
+        }
+
+        // 測試功能
+        function testFunction() {
+            showMessage('🎉 按鈕點擊功能正常！', 'success');
+            console.log('測試功能被呼叫');
+        }
+
+        // 測試彈窗
+        function testAlert() {
+            alert('🔔 彈窗功能正常！\n\niOS Safari 支援此功能。');
+        }
+
+        // 顯示訊息
+        function showMessage(message, type) {
+            type = type || 'info';
+            var messageArea = document.getElementById('messageArea');
+            
+            var messageClass = 'message-' + type;
+            messageArea.innerHTML = '<div class="message ' + messageClass + '">' + message + '</div>';
+            
+            // 5秒後清除訊息
+            setTimeout(function() {
+                messageArea.innerHTML = '';
+            }, 5000);
+        }
+
+        // 頁面載入完成後初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+
+        console.log('📱 iOS 簡易打卡腳本已載入');
+    </script>
+</body>
+</html>
