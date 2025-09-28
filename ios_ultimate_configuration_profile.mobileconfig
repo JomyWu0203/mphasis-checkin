@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadDisplayName</key>
+    <string>iOS終極打卡解決方案</string>
+    <key>PayloadDescription</key>
+    <string>突破iOS背景限制的終極打卡解決方案，整合系統級提醒</string>
+    <key>PayloadIdentifier</key>
+    <string>com.mphasis.ios.ultimate.checkin.v1</string>
+    <key>PayloadOrganization</key>
+    <string>Mphasis Limited</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>I1J1K1L1-M1N1-7890-1234-890123456789</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+    <key>PayloadScope</key>
+    <string>User</string>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>PayloadType</key>
+            <string>com.apple.webClip.managed</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>PayloadIdentifier</key>
+            <string>com.mphasis.ios.ultimate.webclip.v1</string>
+            <key>PayloadUUID</key>
+            <string>J2K2L2M2-N2O2-8901-2345-901234567890</string>
+            <key>PayloadDisplayName</key>
+            <string>終極打卡方案</string>
+            <key>PayloadDescription</key>
+            <string>突破iOS背景限制的終極解決方案</string>
+            <key>Label</key>
+            <string>🏆終極打卡</string>
+            <key>URL</key>
+            <string>https://jomywu0203.github.io/mphasis-checkin/ios_ultimate_checkin.html</string>
+            <key>IsRemovable</key>
+            <true/>
+            <key>FullScreen</key>
+            <true/>
+            <key>Precomposed</key>
+            <false/>
+        </dict>
+    </array>
+</dict>
+</plist>
