@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置文件修復工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+        }
+
+        .status-box {
+            padding: 16px;
+            border-radius: 12px;
+            margin: 16px 0;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px solid #4CAF50;
+            color: #2e7d32;
+        }
+
+        .status-error {
+            background: rgba(244, 67, 54, 0.1);
+            border: 2px solid #f44336;
+            color: #c62828;
+        }
+
+        .status-warning {
+            background: rgba(255, 193, 7, 0.1);
+            border: 2px solid #ffc107;
+            color: #f57f17;
+        }
+
+        .button {
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+        }
+
+        .button-primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .button-secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .button-warning {
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+            color: white;
+        }
+
+        .button:active {
+            transform: scale(0.98);
+        }
+
+        .fix-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .step-number {
+            background: #4CAF50;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .step-description {
+            color: #555;
+            font-size: 0.9rem;
+            line-height: 1.3;
+        }
+
+        .code-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        .download-area {
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed #4CAF50;
+            border-radius: 12px;
+            margin: 16px 0;
+        }
+
+        .download-link {
+            display: inline-block;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .download-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card header">
+            <h1>🔧 配置文件修復工具</h1>
+            <p>解決「無效的描述檔」錯誤</p>
+        </div>
+
+        <!-- 問題診斷 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: #2c3e50;">🔍 問題診斷</h3>
+            
+            <div class="status-box status-error">
+                <strong>❌ 常見的「無效描述檔」原因：</strong><br><br>
+                1. <strong>XML 註解問題</strong> - 配置文件包含註解<br>
+                2. <strong>UUID 格式錯誤</strong> - UUID 不符合標準格式<br>
+                3. <strong>編碼問題</strong> - 文件編碼不是 UTF-8<br>
+                4. <strong>XML 語法錯誤</strong> - 標籤不匹配或格式錯誤<br>
+                5. <strong>必要欄位缺失</strong> - 缺少必要的配置項目
+            </div>
+
+            <div class="status-box status-success">
+                <strong>✅ 已修復的問題：</strong><br><br>
+                • 移除所有 XML 註解<br>
+                • 使用標準 UUID 格式<br>
+                • 確保 UTF-8 編碼<br>
+                • 驗證 XML 語法正確性<br>
+                • 包含所有必要欄位
+            </div>
+        </div>
+
+        <!-- 修復步驟 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: #2c3e50;">🛠️ 修復步驟</h3>
+            
+            <div class="fix-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <div class="step-title">刪除舊的配置文件</div>
+                    <div class="step-description">設定 → VPN 與裝置管理 → 找到舊的 Mphasis 配置文件並刪除</div>
+                </div>
+            </div>
+
+            <div class="fix-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <div class="step-title">下載修復版配置文件</div>
+                    <div class="step-description">使用下方的下載連結獲取修復後的配置文件</div>
+                </div>
+            </div>
+
+            <div class="fix-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <div class="step-title">安裝新的配置文件</div>
+                    <div class="step-description">點擊下載的 .mobileconfig 文件，按照提示安裝</div>
+                </div>
+            </div>
+
+            <div class="fix-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <div class="step-title">驗證安裝成功</div>
+                    <div class="step-description">檢查主畫面是否出現「Mphasis優化打卡」圖示</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 下載區域 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: #2c3e50;">📥 下載修復版配置文件</h3>
+            
+            <div class="download-area">
+                <h4 style="color: #2c3e50; margin-bottom: 12px;">✅ 完全修復版</h4>
+                <p style="color: #666; margin-bottom: 16px;">已移除所有可能導致錯誤的元素</p>
+                
+                <a href="https://raw.githubusercontent.com/jomywu0203/mphasis-checkin/main/fixed_optimized_configuration_profile.mobileconfig" 
+                   class="download-link" 
+                   download="mphasis_fixed_config.mobileconfig">
+                    📱 下載修復版配置文件
+                </a>
+            </div>
+
+            <div class="status-box status-warning">
+                <strong>⚠️ 重要提醒：</strong><br>
+                • 請確保使用 Safari 瀏覽器下載<br>
+                • 下載後直接點擊文件安裝<br>
+                • 如果仍然出現錯誤，請重新啟動設備後再試
+            </div>
+        </div>
+
+        <!-- 備用方案 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: #2c3e50;">🔄 備用安裝方案</h3>
+            
+            <button class="button button-secondary" onclick="showManualMethod()">
+                📖 手動安裝方法
+            </button>
+
+            <button class="button button-warning" onclick="showAlternativeMethod()">
+                🌐 網頁版安裝方法
+            </button>
+
+            <div id="manualMethod" class="hidden">
+                <div class="status-box status-success">
+                    <strong>📖 手動安裝方法：</strong><br><br>
+                    
+                    <strong>步驟 1：</strong> 用 Safari 開啟以下網址<br>
+                    <div class="code-box">https://jomywu0203.github.io/mphasis-checkin/mobile_checkin_optimized.html</div>
+                    
+                    <strong>步驟 2：</strong> 點擊分享按鈕 (📤)<br>
+                    <strong>步驟 3：</strong> 選擇「加入主畫面」<br>
+                    <strong>步驟 4：</strong> 輸入名稱「Mphasis打卡」<br>
+                    <strong>步驟 5：</strong> 點擊「加入」完成
+                </div>
+            </div>
+
+            <div id="alternativeMethod" class="hidden">
+                <div class="status-box status-success">
+                    <strong>🌐 網頁版方法：</strong><br><br>
+                    
+                    <strong>不需要安裝配置文件，直接使用：</strong><br><br>
+                    
+                    1. 將以下網址加入書籤<br>
+                    <div class="code-box">https://jomywu0203.github.io/mphasis-checkin/mobile_checkin_optimized.html</div>
+                    
+                    2. 每次打卡時開啟書籤<br>
+                    3. 使用「複製網址」功能進行打卡<br>
+                    4. 完全不需要配置文件！
+                </div>
+            </div>
+        </div>
+
+        <!-- 技術詳情 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: #2c3e50;">🔬 技術修復詳情</h3>
+            
+            <button class="button button-secondary" onclick="showTechnicalDetails()">
+                🔍 查看修復詳情
+            </button>
+
+            <div id="technicalDetails" class="hidden">
+                <div class="status-box status-success">
+                    <strong>🔧 已修復的技術問題：</strong><br><br>
+                    
+                    <strong>1. XML 註解移除</strong><br>
+                    • 原文件：包含 &lt;!-- 註解 --&gt;<br>
+                    • 修復後：完全移除所有註解<br><br>
+                    
+                    <strong>2. UUID 標準化</strong><br>
+                    • 使用標準 UUID v4 格式<br>
+                    • 確保唯一性和正確性<br><br>
+                    
+                    <strong>3. XML 結構優化</strong><br>
+                    • 移除不必要的空行<br>
+                    • 確保標籤正確配對<br>
+                    • 使用標準縮排<br><br>
+                    
+                    <strong>4. 編碼確保</strong><br>
+                    • UTF-8 編碼<br>
+                    • 無 BOM 標記<br>
+                    • 標準換行符
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showManualMethod() {
+            const element = document.getElementById('manualMethod');
+            element.classList.toggle('hidden');
+        }
+
+        function showAlternativeMethod() {
+            const element = document.getElementById('alternativeMethod');
+            element.classList.toggle('hidden');
+        }
+
+        function showTechnicalDetails() {
+            const element = document.getElementById('technicalDetails');
+            element.classList.toggle('hidden');
+        }
+
+        // 頁面載入完成提示
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ 配置文件修復工具已載入');
+        });
+    </script>
+</body>
+</html>
