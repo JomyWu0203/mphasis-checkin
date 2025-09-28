@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadDisplayName</key>
+    <string>Mphasis自動點選打卡系統</string>
+    <key>PayloadDescription</key>
+    <string>Mphasis CheckIN 自動點選版打卡系統</string>
+    <key>PayloadIdentifier</key>
+    <string>com.mphasis.checkin.autoclick.v1</string>
+    <key>PayloadOrganization</key>
+    <string>Mphasis Limited</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>D1E2F3A4-B5C6-4789-D012-E3F4A5B6C789</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+    <key>PayloadScope</key>
+    <string>User</string>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>PayloadType</key>
+            <string>com.apple.webClip.managed</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>PayloadIdentifier</key>
+            <string>com.mphasis.checkin.webclip.autoclick.v1</string>
+            <key>PayloadUUID</key>
+            <string>E2F3A4B5-C6D7-4890-E123-F4A5B6C7D890</string>
+            <key>PayloadDisplayName</key>
+            <string>Mphasis自動點選打卡</string>
+            <key>PayloadDescription</key>
+            <string>Mphasis CheckIN 自動點選版</string>
+            <key>Label</key>
+            <string>Mphasis自動點選</string>
+            <key>URL</key>
+            <string>https://jomywu0203.github.io/mphasis-checkin/mobile_checkin_autoclick.html</string>
+            <key>IsRemovable</key>
+            <true/>
+            <key>FullScreen</key>
+            <true/>
+            <key>Precomposed</key>
+            <false/>
+        </dict>
+    </array>
+</dict>
+</plist>
