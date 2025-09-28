@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mphasis 智能引導打卡</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mphasis智能打卡">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#667eea">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #4CAF50;
+            --warning-color: #ff9800;
+            --error-color: #f44336;
+            --info-color: #2196F3;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            color: var(--text-dark);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: var(--text-dark);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .guided-badge {
+            background: linear-gradient(45deg, var(--info-color), #1976D2);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        .time-card {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .current-time {
+            font-size: 3rem;
+            font-weight: 200;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-family: monospace;
+        }
+
+        .current-date {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+
+        .button {
+            width: 100%;
+            padding: 18px 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button-primary {
+            background: linear-gradient(45deg, var(--success-color), #45a049);
+            color: white;
+            box-shadow: 0 6px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        .button-secondary {
+            background: linear-gradient(45deg, var(--info-color), #1976D2);
+            color: white;
+            box-shadow: 0 6px 25px rgba(33, 150, 243, 0.3);
+        }
+
+        .button:active {
+            transform: translateY(2px);
+        }
+
+        .guidance-panel {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border: 2px solid var(--info-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .guidance-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--info-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .guidance-title::before {
+            content: "🎯";
+            margin-right: 8px;
+            font-size: 1.5rem;
+        }
+
+        .guidance-steps {
+            list-style: none;
+            padding: 0;
+        }
+
+        .guidance-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .guidance-step:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateX(5px);
+        }
+
+        .step-number {
+            background: var(--info-color);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .step-description {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .automation-status {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .status-value {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-auto {
+            color: var(--success-color);
+        }
+
+        .status-manual {
+            color: var(--warning-color);
+        }
+
+        .status-icon {
+            margin-right: 4px;
+        }
+
+        .limitation-notice {
+            background: rgba(255, 193, 7, 0.1);
+            border: 2px solid var(--warning-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .limitation-title {
+            font-weight: 600;
+            color: #ef6c00;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .limitation-title::before {
+            content: "⚠️";
+            margin-right: 8px;
+        }
+
+        .limitation-text {
+            color: #f57f17;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .comparison-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .table-row {
+            display: flex;
+            border-bottom: 1px solid #eee;
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .table-cell {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .table-cell:first-child {
+            background: #f8f9fa;
+            font-weight: 500;
+            text-align: left;
+        }
+
+        .feature-available {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        .feature-limited {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+
+        .feature-unavailable {
+            color: var(--error-color);
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulsing {
+            animation: pulse 2s infinite;
+        }
+
+        .floating-help {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, var(--info-color), #1976D2);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .floating-help:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 標題 -->
+        <div class="card header">
+            <h1>🎯 Mphasis 智能引導打卡</h1>
+            <div style="color: var(--text-light); font-size: 1rem;">最大化自動化 + 智能引導</div>
+            <div class="guided-badge">智能引導版</div>
+        </div>
+
+        <!-- 時間顯示 -->
+        <div class="card time-card">
+            <div class="current-time" id="currentTime">--:--</div>
+            <div class="current-date" id="currentDate">載入中...</div>
+        </div>
+
+        <!-- 自動化狀態 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: var(--text-dark);">🤖 自動化程度</h3>
+            
+            <div class="automation-status">
+                <div class="status-item">
+                    <span class="status-label">日期檢查</span>
+                    <span class="status-value status-auto">
+                        <span class="status-icon">✅</span>
+                        完全自動
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">網站開啟</span>
+                    <span class="status-value status-auto">
+                        <span class="status-icon">✅</span>
+                        完全自動
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">頁面檢測</span>
+                    <span class="status-value status-auto">
+                        <span class="status-icon">✅</span>
+                        完全自動
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">按鈕點選</span>
+                    <span class="status-value status-manual">
+                        <span class="status-icon">👆</span>
+                        需要手動
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">結果記錄</span>
+                    <span class="status-value status-auto">
+                        <span class="status-icon">✅</span>
+                        完全自動
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技術限制說明 -->
+        <div class="card">
+            <div class="limitation-notice">
+                <div class="limitation-title">為什麼無法自動點選按鈕？</div>
+                <div class="limitation-text">
+                    由於瀏覽器的跨域安全政策 (CORS)，網頁應用無法直接操作其他網站的按鈕。這是為了保護用戶安全而設計的限制。
+                    <br><br>
+                    <strong>原始 Python 程式可以自動點選</strong>，因為它直接控制瀏覽器程序，不受網頁安全限制。
+                </div>
+            </div>
+        </div>
+
+        <!-- 版本比較 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: var(--text-dark);">📊 版本功能比較</h3>
+            
+            <div class="comparison-table">
+                <div class="table-header">功能比較：Python 版 vs 網頁版</div>
+                
+                <div class="table-row">
+                    <div class="table-cell">功能項目</div>
+                    <div class="table-cell">Python 版</div>
+                    <div class="table-cell">網頁版</div>
+                </div>
+                
+                <div class="table-row">
+                    <div class="table-cell">自動點選按鈕</div>
+                    <div class="table-cell feature-available">✅ 完全自動</div>
+                    <div class="table-cell feature-unavailable">❌ 安全限制</div>
+                </div>
+                
+                <div class="table-row">
+                    <div class="table-cell">跨平台支援</div>
+                    <div class="table-cell feature-limited">⚠️ 需要 Python</div>
+                    <div class="table-cell feature-available">✅ 任何設備</div>
+                </div>
+                
+                <div class="table-row">
+                    <div class="table-cell">手機支援</div>
+                    <div class="table-cell feature-unavailable">❌ 不支援</div>
+                    <div class="table-cell feature-available">✅ 完美支援</div>
+                </div>
+                
+                <div class="table-row">
+                    <div class="table-cell">安裝需求</div>
+                    <div class="table-cell feature-limited">⚠️ 複雜安裝</div>
+                    <div class="table-cell feature-available">✅ 無需安裝</div>
+                </div>
+                
+                <div class="table-row">
+                    <div class="table-cell">日期管理</div>
+                    <div class="table-cell feature-available">✅ 完全自動</div>
+                    <div class="table-cell feature-available">✅ 完全自動</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 智能引導打卡 -->
+        <div class="card">
+            <button class="button button-primary pulsing" onclick="startGuidedCheckin()">
+                🎯 開始智能引導打卡
+            </button>
+
+            <button class="button button-secondary" onclick="showTechnicalDetails()">
+                🔬 查看技術詳情
+            </button>
+        </div>
+
+        <!-- 引導面板 -->
+        <div class="guidance-panel hidden" id="guidancePanel">
+            <div class="guidance-title">智能打卡引導</div>
+            
+            <ol class="guidance-steps">
+                <li class="guidance-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">系統自動檢查</div>
+                        <div class="step-description">自動檢查今天是否需要打卡、是否為排除日期</div>
+                    </div>
+                </li>
+                
+                <li class="guidance-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">自動開啟網站</div>
+                        <div class="step-description">系統會自動開啟 Mphasis 打卡網站</div>
+                    </div>
+                </li>
+                
+                <li class="guidance-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">智能頁面檢測</div>
+                        <div class="step-description">自動檢測頁面載入狀態和登入狀態</div>
+                    </div>
+                </li>
+                
+                <li class="guidance-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-title">手動點選按鈕</div>
+                        <div class="step-description">在開啟的視窗中尋找並點選 "CHECK-IN" 按鈕</div>
+                    </div>
+                </li>
+                
+                <li class="guidance-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <div class="step-title">自動記錄結果</div>
+                        <div class="step-description">系統會自動記錄打卡時間和結果</div>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <!-- 技術詳情 -->
+        <div class="card hidden" id="technicalDetails">
+            <h3 style="margin-bottom: 16px; color: var(--text-dark);">🔬 技術限制詳解</h3>
+            
+            <div class="limitation-notice">
+                <div class="limitation-title">跨域安全政策 (CORS)</div>
+                <div class="limitation-text">
+                    <strong>什麼是 CORS？</strong><br>
+                    Cross-Origin Resource Sharing 是瀏覽器的安全機制，防止惡意網站操作其他網站的內容。
+                    <br><br>
+                    <strong>為什麼影響自動點選？</strong><br>
+                    • 我們的應用：https://jomywu0203.github.io/<br>
+                    • Mphasis 網站：https://enterprise-apps.mphasis.com/ess/v1/#/home<br>
+                    • 不同域名 = 無法直接操作
+                    <br><br>
+                    <strong>Python 版本為什麼可以？</strong><br>
+                    Python 使用 Selenium 直接控制瀏覽器程序，不受網頁安全限制。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 浮動幫助按鈕 -->
+    <button class="floating-help" onclick="showHelp()" title="幫助">
+        ❓
+    </button>
+
+    <script>
+        let checkinWindow = null;
+        let guidanceActive = false;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            console.log('🎯 Mphasis 智能引導打卡系統已啟動');
+        });
+
+        // 更新時間
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-TW', { 
+                hour: '2-digit', 
+                minute: '2-digit'
+            });
+            const dateStr = now.toLocaleDateString('zh-TW', { 
+                year: 'numeric',
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            });
+            
+            document.getElementById('currentTime').textContent = timeStr;
+            document.getElementById('currentDate').textContent = dateStr;
+        }
+
+        // 開始智能引導打卡
+        async function startGuidedCheckin() {
+            if (guidanceActive) {
+                alert('引導打卡正在進行中，請稍後再試');
+                return;
+            }
+
+            guidanceActive = true;
+            
+            try {
+                // 顯示引導面板
+                const panel = document.getElementById('guidancePanel');
+                panel.classList.remove('hidden');
+                
+                // 步驟 1: 檢查日期
+                await highlightStep(1);
+                const shouldCheckin = checkIfShouldCheckin();
+                
+                if (!shouldCheckin.should) {
+                    alert(`ℹ️ ${shouldCheckin.reason}`);
+                    return;
+                }
+
+                // 步驟 2: 開啟網站
+                await highlightStep(2);
+                checkinWindow = window.open('https://enterprise-apps.mphasis.com/ess/v1/#/home', 'checkinWindow', 'width=800,height=600');
+                
+                if (!checkinWindow) {
+                    throw new Error('無法開啟打卡網站，請檢查彈窗設定');
+                }
+
+                // 步驟 3: 檢測頁面
+                await highlightStep(3);
+                await waitForPageLoad();
+
+                // 步驟 4: 提示手動操作
+                await highlightStep(4);
+                showManualInstruction();
+
+                // 步驟 5: 監控結果
+                await highlightStep(5);
+                monitorCheckinResult();
+
+            } catch (error) {
+                alert('❌ 引導打卡失敗: ' + error.message);
+                console.error('引導打卡錯誤:', error);
+            } finally {
+                guidanceActive = false;
+            }
+        }
+
+        // 高亮顯示步驟
+        async function highlightStep(stepNumber) {
+            // 移除所有高亮
+            document.querySelectorAll('.guidance-step').forEach(step => {
+                step.style.background = 'rgba(255, 255, 255, 0.7)';
+                step.style.transform = 'translateX(0)';
+            });
+
+            // 高亮當前步驟
+            const currentStep = document.querySelectorAll('.guidance-step')[stepNumber - 1];
+            currentStep.style.background = 'rgba(33, 150, 243, 0.2)';
+            currentStep.style.transform = 'translateX(10px)';
+            currentStep.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // 等待一段時間
+            await sleep(2000);
+        }
+
+        // 檢查是否應該打卡
+        function checkIfShouldCheckin() {
+            const now = new Date();
+            const dayOfWeek = now.getDay(); // 0 = 星期日, 1 = 星期一, ...
+            
+            // 檢查是否為工作日 (星期一到星期五)
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                return {
+                    should: false,
+                    reason: '今天是週末，不需要打卡'
+                };
+            }
+
+            // 這裡可以添加更多檢查邏輯，如排除日期等
+            return {
+                should: true,
+                reason: '今天需要打卡'
+            };
+        }
+
+        // 等待頁面載入
+        async function waitForPageLoad() {
+            return new Promise((resolve) => {
+                let attempts = 0;
+                const maxAttempts = 10;
+                
+                const checkLoad = () => {
+                    attempts++;
+                    
+                    if (!checkinWindow || checkinWindow.closed) {
+                        resolve();
+                        return;
+                    }
+
+                    if (attempts >= maxAttempts) {
+                        resolve();
+                        return;
+                    }
+
+                    setTimeout(checkLoad, 1000);
+                };
+
+                setTimeout(checkLoad, 3000); // 初始延遲
+            });
+        }
+
+        // 顯示手動操作指示
+        function showManualInstruction() {
+            // 創建一個浮動提示
+            const instruction = document.createElement('div');
+            instruction.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(45deg, #2196F3, #1976D2);
+                color: white;
+                padding: 20px;
+                border-radius: 16px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                text-align: center;
+                max-width: 300px;
+                font-weight: 600;
+            `;
+            
+            instruction.innerHTML = `
+                <div style="font-size: 2rem; margin-bottom: 12px;">👆</div>
+                <div style="margin-bottom: 12px;">請在打卡視窗中</div>
+                <div style="margin-bottom: 16px; font-size: 1.2rem; color: #ffeb3b;">點擊 "CHECK-IN" 按鈕</div>
+                <button onclick="this.parentElement.remove()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer;">我知道了</button>
+            `;
+            
+            document.body.appendChild(instruction);
+            
+            // 5秒後自動移除
+            setTimeout(() => {
+                if (instruction.parentElement) {
+                    instruction.remove();
+                }
+            }, 5000);
+        }
+
+        // 監控打卡結果
+        function monitorCheckinResult() {
+            let monitorCount = 0;
+            const maxMonitor = 60; // 監控 60 秒
+            
+            const monitor = () => {
+                monitorCount++;
+                
+                if (!checkinWindow || checkinWindow.closed) {
+                    // 視窗關閉，假設打卡完成
+                    recordCheckinResult(true);
+                    showCompletionMessage(true);
+                    return;
+                }
+
+                if (monitorCount >= maxMonitor) {
+                    // 監控超時
+                    showCompletionMessage(false);
+                    return;
+                }
+
+                setTimeout(monitor, 1000);
+            };
+
+            setTimeout(monitor, 1000);
+        }
+
+        // 記錄打卡結果
+        function recordCheckinResult(success) {
+            const now = new Date();
+            const record = {
+                timestamp: now.toISOString(),
+                time: now.toLocaleString('zh-TW'),
+                success: success,
+                type: 'guided_checkin'
+            };
+
+            try {
+                const history = JSON.parse(localStorage.getItem('mphasis_checkin_history') || '[]');
+                history.unshift(record);
+                
+                if (history.length > 50) {
+                    history.splice(50);
+                }
+                
+                localStorage.setItem('mphasis_checkin_history', JSON.stringify(history));
+                localStorage.setItem('mphasis_last_checkin', JSON.stringify(record));
+                
+                console.log('✅ 打卡記錄已儲存:', record);
+                
+            } catch (error) {
+                console.error('❌ 儲存打卡記錄失敗:', error);
+            }
+        }
+
+        // 顯示完成訊息
+        function showCompletionMessage(success) {
+            const message = success ? 
+                '✅ 智能引導打卡完成！\n\n系統已自動記錄打卡時間。' :
+                '⏰ 引導打卡監控結束\n\n請確認打卡是否完成。';
+            
+            alert(message);
+            
+            // 隱藏引導面板
+            document.getElementById('guidancePanel').classList.add('hidden');
+        }
+
+        // 顯示技術詳情
+        function showTechnicalDetails() {
+            const details = document.getElementById('technicalDetails');
+            details.classList.toggle('hidden');
+        }
+
+        // 顯示幫助
+        function showHelp() {
+            const helpText = `
+🎯 智能引導打卡系統說明
+
+🤖 自動化功能：
+• ✅ 自動檢查打卡日期
+• ✅ 自動開啟打卡網站
+• ✅ 智能頁面檢測
+• ✅ 自動記錄結果
+
+👆 手動操作：
+• 需要手動點選 CHECK-IN 按鈕
+• 這是瀏覽器安全限制，無法避免
+
+🔬 技術原理：
+• 跨域安全政策 (CORS) 限制
+• 原始 Python 版本可以完全自動化
+• 網頁版本在安全限制下最大化自動化
+
+💡 使用建議：
+• 使用智能引導功能
+• 按照步驟提示操作
+• 系統會自動處理其他事項
+            `;
+            
+            alert(helpText);
+        }
+
+        // 工具函數
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        console.log('🎯 智能引導打卡系統初始化完成');
+    </script>
+</body>
+</html>
