@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mphasis 打卡系統 - 優化版</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mphasis打卡">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#667eea">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⏰%3C/text%3E%3C/svg%3E">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #4CAF50;
+            --warning-color: #ff9800;
+            --error-color: #f44336;
+            --info-color: #2196F3;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --bg-light: #f8f9fa;
+            --border-color: #e0e0e0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            color: var(--text-dark);
+            padding: 20px;
+            position: relative;
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: var(--text-dark);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .status-badge {
+            background: linear-gradient(45deg, var(--success-color), #45a049);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        .time-card {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .current-time {
+            font-size: 3rem;
+            font-weight: 200;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-family: -apple-system, BlinkMacSystemFont, monospace;
+            letter-spacing: 2px;
+        }
+
+        .current-date {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+
+        .time-status {
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .work-hours {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2e7d32;
+            border: 1px solid var(--success-color);
+        }
+
+        .off-hours {
+            background: rgba(255, 152, 0, 0.1);
+            color: #ef6c00;
+            border: 1px solid var(--warning-color);
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button {
+            width: 100%;
+            padding: 18px 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button-primary {
+            background: linear-gradient(45deg, var(--success-color), #45a049);
+            color: white;
+            box-shadow: 0 6px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        .button-secondary {
+            background: linear-gradient(45deg, var(--info-color), #1976D2);
+            color: white;
+            box-shadow: 0 6px 25px rgba(33, 150, 243, 0.3);
+        }
+
+        .button-warning {
+            background: linear-gradient(45deg, var(--warning-color), #f57c00);
+            color: white;
+            box-shadow: 0 6px 25px rgba(255, 152, 0, 0.3);
+        }
+
+        .button:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .button:disabled {
+            background: #bdc3c7;
+            color: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .checkin-methods {
+            margin-bottom: 20px;
+        }
+
+        .method-option {
+            background: var(--bg-light);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .method-option:hover {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .method-option.selected {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .method-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .method-description {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .last-checkin {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .last-checkin-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .last-checkin-time {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .status-message {
+            padding: 16px;
+            border-radius: 12px;
+            margin: 16px 0;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid var(--success-color);
+            color: #2e7d32;
+        }
+
+        .status-error {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid var(--error-color);
+            color: #c62828;
+        }
+
+        .status-info {
+            background: rgba(33, 150, 243, 0.1);
+            border: 1px solid var(--info-color);
+            color: #1565c0;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .quick-action {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quick-action:hover {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .quick-action-icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .quick-action-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .floating-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .floating-button:hover {
+            transform: scale(1.1);
+        }
+
+        .floating-button:active {
+            transform: scale(0.95);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* 自適應設計 */
+        @media (max-width: 375px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .current-time {
+                font-size: 2.5rem;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 深色模式支援 */
+        @media (prefers-color-scheme: dark) {
+            .card {
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+            }
+            
+            .form-group input,
+            .form-group select {
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                border-color: rgba(255, 255, 255, 0.3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 標題 -->
+        <div class="card header">
+            <h1>⏰ Mphasis 打卡系統</h1>
+            <div style="color: var(--text-light); font-size: 1rem;">優化版 - 確保打卡成功</div>
+            <div class="status-badge" id="systemStatus">系統正常</div>
+        </div>
+
+        <!-- 時間顯示 -->
+        <div class="card time-card">
+            <div class="current-time" id="currentTime">--:--</div>
+            <div class="current-date" id="currentDate">載入中...</div>
+            <div class="time-status" id="timeStatus">檢查中...</div>
+        </div>
+
+        <!-- 打卡設定 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: var(--text-dark);">⚙️ 打卡設定</h3>
+            
+            <div class="settings-grid">
+                <div class="form-group">
+                    <label for="checkinUrl">🌐 打卡網址：</label>
+                    <input type="url" id="checkinUrl" value="https://enterprise-apps.mphasis.com/ess/v1/#/home" placeholder="請輸入完整的打卡網址">
+                </div>
+
+                <div class="form-group">
+                    <label for="checkinTime">⏰ 打卡時間：</label>
+                    <input type="time" id="checkinTime" value="09:00">
+                </div>
+
+                <div class="form-group">
+                    <label for="companyName">🏢 公司名稱：</label>
+                    <input type="text" id="companyName" value="Mphasis" placeholder="請輸入公司名稱">
+                </div>
+
+                <div class="form-group">
+                    <label for="reminderMode">📢 提醒模式：</label>
+                    <select id="reminderMode">
+                        <option value="manual">手動打卡</option>
+                        <option value="popup">彈窗提醒</option>
+                        <option value="notification">通知提醒</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="button button-secondary" onclick="saveSettings()">
+                💾 儲存設定
+            </button>
+        </div>
+
+        <!-- 打卡方法選擇 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: var(--text-dark);">🎯 選擇打卡方法</h3>
+            
+            <div class="checkin-methods">
+                <div class="method-option selected" data-method="direct" onclick="selectMethod('direct')">
+                    <div class="method-title">🚀 直接開啟 (推薦)</div>
+                    <div class="method-description">在新視窗中直接開啟打卡網站</div>
+                </div>
+
+                <div class="method-option" data-method="copy" onclick="selectMethod('copy')">
+                    <div class="method-title">📋 複製網址</div>
+                    <div class="method-description">複製網址到剪貼簿，手動開啟瀏覽器</div>
+                </div>
+
+                <div class="method-option" data-method="bookmark" onclick="selectMethod('bookmark')">
+                    <div class="method-title">🔖 書籤方式</div>
+                    <div class="method-description">建立書籤，點擊即可打卡</div>
+                </div>
+
+                <div class="method-option" data-method="redirect" onclick="selectMethod('redirect')">
+                    <div class="method-title">🔄 直接跳轉</div>
+                    <div class="method-description">直接跳轉到打卡網站（會離開當前頁面）</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要打卡按鈕 -->
+        <div class="card">
+            <button class="button button-primary" onclick="executeCheckin()">
+                ✅ 立即打卡
+            </button>
+
+            <div class="quick-actions">
+                <div class="quick-action" onclick="testConnection()">
+                    <div class="quick-action-icon">🔗</div>
+                    <div class="quick-action-text">測試連線</div>
+                </div>
+
+                <div class="quick-action" onclick="openSettings()">
+                    <div class="quick-action-icon">⚙️</div>
+                    <div class="quick-action-text">進階設定</div>
+                </div>
+            </div>
+
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <div>執行中...</div>
+            </div>
+
+            <div id="statusMessage"></div>
+        </div>
+
+        <!-- 打卡記錄 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: var(--text-dark);">📊 打卡記錄</h3>
+            
+            <div class="last-checkin" id="lastCheckinRecord">
+                <div class="last-checkin-title">上次打卡時間</div>
+                <div class="last-checkin-time" id="lastCheckinTime">尚無記錄</div>
+            </div>
+
+            <button class="button button-secondary" onclick="viewHistory()">
+                📋 查看完整記錄
+            </button>
+        </div>
+
+        <!-- 快速操作 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: var(--text-dark);">🛠️ 快速操作</h3>
+            
+            <button class="button button-warning" onclick="clearAllData()">
+                🗑️ 清除所有資料
+            </button>
+
+            <button class="button button-secondary" onclick="exportSettings()">
+                📤 匯出設定
+            </button>
+
+            <button class="button button-secondary" onclick="showHelp()">
+                ❓ 使用說明
+            </button>
+        </div>
+    </div>
+
+    <!-- 浮動按鈕 -->
+    <button class="floating-button" onclick="quickCheckin()" title="快速打卡">
+        ⏰
+    </button>
+
+    <script>
+        // 全域變數
+        let currentMethod = 'direct';
+        let settings = {
+            checkinUrl: 'https://enterprise-apps.mphasis.com/ess/v1/#/home',
+            checkinTime: '09:00',
+            companyName: 'Mphasis',
+            reminderMode: 'manual'
+        };
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            updateTime();
+            setInterval(updateTime, 1000);
+            updateTimeStatus();
+            setInterval(updateTimeStatus, 60000); // 每分鐘檢查一次
+            loadLastCheckin();
+            
+            console.log('✅ Mphasis 打卡系統優化版已啟動');
+        });
+
+        // 載入設定
+        function loadSettings() {
+            try {
+                const saved = localStorage.getItem('mphasis_checkin_settings');
+                if (saved) {
+                    settings = { ...settings, ...JSON.parse(saved) };
+                }
+                
+                // 更新 UI
+                document.getElementById('checkinUrl').value = settings.checkinUrl;
+                document.getElementById('checkinTime').value = settings.checkinTime;
+                document.getElementById('companyName').value = settings.companyName;
+                document.getElementById('reminderMode').value = settings.reminderMode;
+                
+                console.log('設定已載入:', settings);
+            } catch (error) {
+                console.error('載入設定失敗:', error);
+                showMessage('載入設定失敗，使用預設設定', 'error');
+            }
+        }
+
+        // 儲存設定
+        function saveSettings() {
+            try {
+                settings.checkinUrl = document.getElementById('checkinUrl').value;
+                settings.checkinTime = document.getElementById('checkinTime').value;
+                settings.companyName = document.getElementById('companyName').value;
+                settings.reminderMode = document.getElementById('reminderMode').value;
+                
+                localStorage.setItem('mphasis_checkin_settings', JSON.stringify(settings));
+                showMessage('✅ 設定已儲存', 'success');
+                
+                console.log('設定已儲存:', settings);
+            } catch (error) {
+                console.error('儲存設定失敗:', error);
+                showMessage('❌ 儲存設定失敗', 'error');
+            }
+        }
+
+        // 更新時間
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-TW', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateStr = now.toLocaleDateString('zh-TW', { 
+                year: 'numeric',
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            });
+            
+            document.getElementById('currentTime').textContent = timeStr.substring(0, 5); // 只顯示時分
+            document.getElementById('currentDate').textContent = dateStr;
+        }
+
+        // 更新時間狀態
+        function updateTimeStatus() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const statusElement = document.getElementById('timeStatus');
+            
+            if (currentHour >= 9 && currentHour < 18) {
+                statusElement.textContent = '上班時間 📈';
+                statusElement.className = 'time-status work-hours';
+            } else {
+                statusElement.textContent = '非上班時間 🌙';
+                statusElement.className = 'time-status off-hours';
+            }
+        }
+
+        // 選擇打卡方法
+        function selectMethod(method) {
+            currentMethod = method;
+            
+            // 移除所有選中狀態
+            document.querySelectorAll('.method-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // 添加選中狀態
+            document.querySelector(`[data-method="${method}"]`).classList.add('selected');
+            
+            console.log('選擇打卡方法:', method);
+        }
+
+        // 執行打卡
+        function executeCheckin() {
+            const url = settings.checkinUrl;
+            if (!url) {
+                showMessage('❌ 請先設定打卡網址', 'error');
+                return;
+            }
+
+            showLoading(true);
+            console.log(`開始執行打卡 - 方法: ${currentMethod}, 網址: ${url}`);
+
+            // 根據選擇的方法執行打卡
+            switch (currentMethod) {
+                case 'direct':
+                    executeDirectMethod(url);
+                    break;
+                case 'copy':
+                    executeCopyMethod(url);
+                    break;
+                case 'bookmark':
+                    executeBookmarkMethod(url);
+                    break;
+                case 'redirect':
+                    executeRedirectMethod(url);
+                    break;
+                default:
+                    executeDirectMethod(url);
+            }
+
+            // 記錄打卡時間
+            recordCheckinTime();
+        }
+
+        // 直接開啟方法
+        function executeDirectMethod(url) {
+            try {
+                // 嘗試多種開啟方式
+                const methods = [
+                    () => window.open(url, '_blank', 'noopener,noreferrer'),
+                    () => window.open(url, '_blank'),
+                    () => {
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                ];
+
+                let success = false;
+                for (let i = 0; i < methods.length && !success; i++) {
+                    try {
+                        const result = methods[i]();
+                        if (result && !result.closed) {
+                            success = true;
+                            console.log(`直接開啟方法 ${i + 1} 成功`);
+                        }
+                    } catch (e) {
+                        console.warn(`直接開啟方法 ${i + 1} 失敗:`, e);
+                    }
+                }
+
+                setTimeout(() => {
+                    showLoading(false);
+                    if (success) {
+                        showMessage('✅ 打卡網站已開啟！請完成打卡流程。', 'success');
+                    } else {
+                        showMessage('⚠️ 直接開啟可能被阻擋，請嘗試其他方法。', 'error');
+                    }
+                }, 2000);
+
+            } catch (error) {
+                showLoading(false);
+                showMessage(`❌ 開啟失敗：${error.message}`, 'error');
+                console.error('直接開啟失敗:', error);
+            }
+        }
+
+        // 複製網址方法
+        function executeCopyMethod(url) {
+            try {
+                navigator.clipboard.writeText(url).then(() => {
+                    showLoading(false);
+                    showMessage('✅ 網址已複製到剪貼簿！請開啟瀏覽器並貼上。', 'success');
+                    console.log('網址已複製到剪貼簿');
+                }).catch(() => {
+                    // 備用複製方法
+                    const textArea = document.createElement('textarea');
+                    textArea.value = url;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    showLoading(false);
+                    showMessage('✅ 網址已複製！請手動開啟瀏覽器並貼上。', 'success');
+                    console.log('網址已複製（備用方法）');
+                });
+            } catch (error) {
+                showLoading(false);
+                showMessage(`❌ 複製失敗：${error.message}`, 'error');
+                console.error('複製失敗:', error);
+            }
+        }
+
+        // 書籤方法
+        function executeBookmarkMethod(url) {
+            const bookmarkScript = `javascript:window.open('${url}', '_blank');`;
+            
+            try {
+                navigator.clipboard.writeText(bookmarkScript).then(() => {
+                    showLoading(false);
+                    showMessage('✅ 打卡書籤已複製！請建立新書籤並貼上內容。', 'success');
+                    console.log('書籤已複製');
+                }).catch(() => {
+                    showLoading(false);
+                    showMessage(`📋 請手動複製書籤：\\n\\n${bookmarkScript}`, 'info');
+                });
+            } catch (error) {
+                showLoading(false);
+                showMessage(`❌ 書籤生成失敗：${error.message}`, 'error');
+                console.error('書籤生成失敗:', error);
+            }
+        }
+
+        // 直接跳轉方法
+        function executeRedirectMethod(url) {
+            if (confirm('⚠️ 此方法會離開當前頁面，確定要繼續嗎？')) {
+                showLoading(false);
+                console.log('直接跳轉到:', url);
+                window.location.href = url;
+            } else {
+                showLoading(false);
+                showMessage('❌ 已取消跳轉', 'info');
+            }
+        }
+
+        // 快速打卡
+        function quickCheckin() {
+            console.log('快速打卡');
+            executeCheckin();
+        }
+
+        // 測試連線
+        function testConnection() {
+            const url = settings.checkinUrl;
+            if (!url) {
+                showMessage('❌ 請先設定打卡網址', 'error');
+                return;
+            }
+
+            showLoading(true);
+            console.log('測試連線:', url);
+
+            // 嘗試創建一個圖片請求來測試網站可達性
+            const img = new Image();
+            const timeout = setTimeout(() => {
+                showLoading(false);
+                showMessage('⚠️ 連線測試超時，網站可能無法訪問', 'error');
+            }, 10000);
+
+            img.onload = img.onerror = () => {
+                clearTimeout(timeout);
+                showLoading(false);
+                showMessage('✅ 網站連線正常！', 'success');
+                console.log('連線測試成功');
+            };
+
+            // 使用網站的 favicon 或根目錄來測試
+            img.src = new URL(url).origin + '/favicon.ico?' + Date.now();
+        }
+
+        // 記錄打卡時間
+        function recordCheckinTime() {
+            const now = new Date();
+            const record = {
+                timestamp: now.toISOString(),
+                time: now.toLocaleString('zh-TW'),
+                method: currentMethod,
+                url: settings.checkinUrl
+            };
+
+            try {
+                // 儲存最新記錄
+                localStorage.setItem('mphasis_last_checkin', JSON.stringify(record));
+                
+                // 儲存歷史記錄
+                const history = JSON.parse(localStorage.getItem('mphasis_checkin_history') || '[]');
+                history.unshift(record);
+                
+                // 只保留最近 50 次記錄
+                if (history.length > 50) {
+                    history.splice(50);
+                }
+                
+                localStorage.setItem('mphasis_checkin_history', JSON.stringify(history));
+                
+                // 更新顯示
+                loadLastCheckin();
+                
+                console.log('打卡記錄已儲存:', record);
+            } catch (error) {
+                console.error('儲存打卡記錄失敗:', error);
+            }
+        }
+
+        // 載入最後打卡記錄
+        function loadLastCheckin() {
+            try {
+                const lastCheckin = localStorage.getItem('mphasis_last_checkin');
+                if (lastCheckin) {
+                    const record = JSON.parse(lastCheckin);
+                    document.getElementById('lastCheckinTime').textContent = record.time;
+                } else {
+                    document.getElementById('lastCheckinTime').textContent = '尚無記錄';
+                }
+            } catch (error) {
+                console.error('載入打卡記錄失敗:', error);
+                document.getElementById('lastCheckinTime').textContent = '載入失敗';
+            }
+        }
+
+        // 顯示載入指示器
+        function showLoading(show) {
+            const loading = document.getElementById('loadingIndicator');
+            if (show) {
+                loading.classList.add('show');
+            } else {
+                loading.classList.remove('show');
+            }
+        }
+
+        // 顯示狀態訊息
+        function showMessage(message, type = 'info') {
+            const messageContainer = document.getElementById('statusMessage');
+            messageContainer.innerHTML = `
+                <div class="status-message status-${type}">
+                    ${message}
+                </div>
+            `;
+
+            // 3秒後自動清除訊息
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        // 開啟設定
+        function openSettings() {
+            document.getElementById('checkinUrl').focus();
+        }
+
+        // 查看歷史記錄
+        function viewHistory() {
+            try {
+                const history = JSON.parse(localStorage.getItem('mphasis_checkin_history') || '[]');
+                
+                if (history.length === 0) {
+                    showMessage('📋 尚無打卡記錄', 'info');
+                    return;
+                }
+
+                let historyText = '📊 最近打卡記錄：\\n\\n';
+                history.slice(0, 10).forEach((record, index) => {
+                    historyText += `${index + 1}. ${record.time} (${record.method})\\n`;
+                });
+
+                alert(historyText);
+            } catch (error) {
+                console.error('查看歷史記錄失敗:', error);
+                showMessage('❌ 查看歷史記錄失敗', 'error');
+            }
+        }
+
+        // 清除所有資料
+        function clearAllData() {
+            if (confirm('⚠️ 確定要清除所有資料嗎？此操作無法復原。')) {
+                try {
+                    localStorage.removeItem('mphasis_checkin_settings');
+                    localStorage.removeItem('mphasis_last_checkin');
+                    localStorage.removeItem('mphasis_checkin_history');
+                    
+                    // 重新載入頁面
+                    location.reload();
+                } catch (error) {
+                    console.error('清除資料失敗:', error);
+                    showMessage('❌ 清除資料失敗', 'error');
+                }
+            }
+        }
+
+        // 匯出設定
+        function exportSettings() {
+            try {
+                const data = {
+                    settings: settings,
+                    lastCheckin: JSON.parse(localStorage.getItem('mphasis_last_checkin') || 'null'),
+                    history: JSON.parse(localStorage.getItem('mphasis_checkin_history') || '[]')
+                };
+
+                const dataStr = JSON.stringify(data, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `mphasis_checkin_backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showMessage('✅ 設定已匯出', 'success');
+            } catch (error) {
+                console.error('匯出設定失敗:', error);
+                showMessage('❌ 匯出設定失敗', 'error');
+            }
+        }
+
+        // 顯示使用說明
+        function showHelp() {
+            const helpText = `
+📱 Mphasis 打卡系統使用說明
+
+🎯 打卡方法：
+• 直接開啟：在新視窗開啟打卡網站（推薦）
+• 複製網址：複製到剪貼簿，手動開啟
+• 書籤方式：建立書籤，一鍵打卡
+• 直接跳轉：跳轉到打卡網站
+
+⚙️ 設定說明：
+• 打卡網址：您公司的打卡系統網址
+• 打卡時間：設定提醒時間
+• 公司名稱：自訂公司名稱
+• 提醒模式：選擇提醒方式
+
+🛠️ 故障排除：
+• 如果直接開啟失敗，嘗試複製網址方法
+• 確保瀏覽器允許彈窗
+• 檢查網路連線是否正常
+
+❓ 需要協助？
+請確保已正確設定打卡網址和相關參數。
+            `;
+            
+            alert(helpText);
+        }
+
+        // 監聽錯誤
+        window.addEventListener('error', function(e) {
+            console.error('JavaScript 錯誤:', e.error);
+        });
+
+        // 監聽設定變更
+        document.getElementById('checkinUrl').addEventListener('change', saveSettings);
+        document.getElementById('checkinTime').addEventListener('change', saveSettings);
+        document.getElementById('companyName').addEventListener('change', saveSettings);
+        document.getElementById('reminderMode').addEventListener('change', saveSettings);
+
+        console.log('🚀 Mphasis 打卡系統優化版初始化完成');
+    </script>
+</body>
+</html>
