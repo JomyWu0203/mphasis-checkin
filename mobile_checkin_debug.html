@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mphasis 打卡系統 - 調試版</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mphasis打卡調試">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#667eea">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #4CAF50;
+            --warning-color: #ff9800;
+            --error-color: #f44336;
+            --info-color: #2196F3;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            color: var(--text-dark);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: var(--text-dark);
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .debug-badge {
+            background: linear-gradient(45deg, var(--warning-color), #f57c00);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        .time-card {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .current-time {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-family: monospace;
+        }
+
+        .current-date {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .button {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button-primary {
+            background: linear-gradient(45deg, var(--success-color), #45a049);
+            color: white;
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .button-secondary {
+            background: linear-gradient(45deg, var(--info-color), #1976D2);
+            color: white;
+            box-shadow: 0 4px 20px rgba(33, 150, 243, 0.3);
+        }
+
+        .button-warning {
+            background: linear-gradient(45deg, var(--warning-color), #f57c00);
+            color: white;
+            box-shadow: 0 4px 20px rgba(255, 152, 0, 0.3);
+        }
+
+        .button-error {
+            background: linear-gradient(45deg, var(--error-color), #d32f2f);
+            color: white;
+            box-shadow: 0 4px 20px rgba(244, 67, 54, 0.3);
+        }
+
+        .button:active {
+            transform: translateY(2px);
+        }
+
+        .button:disabled {
+            background: #bdc3c7;
+            color: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .debug-log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border-left: 3px solid;
+        }
+
+        .log-success {
+            background: rgba(76, 175, 80, 0.1);
+            border-left-color: var(--success-color);
+            color: #2e7d32;
+        }
+
+        .log-error {
+            background: rgba(244, 67, 54, 0.1);
+            border-left-color: var(--error-color);
+            color: #c62828;
+        }
+
+        .log-warning {
+            background: rgba(255, 152, 0, 0.1);
+            border-left-color: var(--warning-color);
+            color: #ef6c00;
+        }
+
+        .log-info {
+            background: rgba(33, 150, 243, 0.1);
+            border-left-color: var(--info-color);
+            color: #1565c0;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-success { background: var(--success-color); }
+        .status-error { background: var(--error-color); }
+        .status-warning { background: var(--warning-color); }
+        .status-info { background: var(--info-color); }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .test-results {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .test-item:last-child {
+            border-bottom: none;
+        }
+
+        .test-name {
+            font-weight: 500;
+        }
+
+        .test-status {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .clear-button {
+            background: none;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .url-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            margin: 8px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, var(--success-color), #45a049);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .error-details {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid var(--error-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+            font-size: 0.9rem;
+            color: #c62828;
+        }
+
+        .success-details {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid var(--success-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+            font-size: 0.9rem;
+            color: #2e7d32;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 標題 -->
+        <div class="card header">
+            <h1>🔧 Mphasis 打卡系統調試</h1>
+            <div style="color: var(--text-light); font-size: 1rem;">問題診斷與修復工具</div>
+            <div class="debug-badge">調試模式</div>
+        </div>
+
+        <!-- 時間顯示 -->
+        <div class="card time-card">
+            <div class="current-time" id="currentTime">--:--</div>
+            <div class="current-date" id="currentDate">載入中...</div>
+        </div>
+
+        <!-- 系統檢測 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: var(--text-dark);">🔍 系統相容性檢測</h3>
+            
+            <button class="button button-secondary" onclick="runSystemTests()">
+                🧪 執行完整檢測
+            </button>
+
+            <div class="test-results" id="testResults">
+                <div class="test-item">
+                    <span class="test-name">瀏覽器檢測</span>
+                    <span class="test-status" id="browserTest">
+                        <span class="status-indicator status-warning"></span>
+                        等待檢測
+                    </span>
+                </div>
+                <div class="test-item">
+                    <span class="test-name">JavaScript 支援</span>
+                    <span class="test-status" id="jsTest">
+                        <span class="status-indicator status-warning"></span>
+                        等待檢測
+                    </span>
+                </div>
+                <div class="test-item">
+                    <span class="test-name">彈窗權限</span>
+                    <span class="test-status" id="popupTest">
+                        <span class="status-indicator status-warning"></span>
+                        等待檢測
+                    </span>
+                </div>
+                <div class="test-item">
+                    <span class="test-name">網路連線</span>
+                    <span class="test-status" id="networkTest">
+                        <span class="status-indicator status-warning"></span>
+                        等待檢測
+                    </span>
+                </div>
+                <div class="test-item">
+                    <span class="test-name">本地儲存</span>
+                    <span class="test-status" id="storageTest">
+                        <span class="status-indicator status-warning"></span>
+                        等待檢測
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 打卡測試 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: var(--text-dark);">🎯 打卡功能測試</h3>
+            
+            <div class="form-group">
+                <label for="testUrl">測試網址：</label>
+                <input type="url" id="testUrl" value="https://mphasisone.mphasis.com/" placeholder="請輸入打卡網址">
+            </div>
+
+            <button class="button button-primary" onclick="testBasicOpen()">
+                🌐 測試基本開啟功能
+            </button>
+
+            <button class="button button-secondary" onclick="testWithDelay()">
+                ⏱️ 測試延遲開啟
+            </button>
+
+            <button class="button button-warning" onclick="testPopupSettings()">
+                🔧 測試彈窗設定
+            </button>
+
+            <button class="button button-error" onclick="testFallbackMethod()">
+                🛡️ 測試備用方案
+            </button>
+
+            <div id="testProgressBar" class="progress-bar hidden">
+                <div class="progress-fill" id="testProgress"></div>
+            </div>
+
+            <div id="testResult"></div>
+        </div>
+
+        <!-- 調試日誌 -->
+        <div class="card">
+            <h3 style="margin-bottom: 8px; color: var(--text-dark);">📋 調試日誌</h3>
+            <button class="clear-button" onclick="clearDebugLog()">清除日誌</button>
+            
+            <div class="debug-log" id="debugLog">
+                <div class="log-entry log-info">
+                    <strong>[INFO]</strong> 調試系統已啟動
+                </div>
+            </div>
+        </div>
+
+        <!-- 修復建議 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: var(--text-dark);">🛠️ 常見問題修復</h3>
+            
+            <button class="button button-secondary" onclick="showPopupHelp()">
+                🚫 彈窗被阻擋的解決方案
+            </button>
+
+            <button class="button button-secondary" onclick="showSafariHelp()">
+                🍎 Safari 特殊設定說明
+            </button>
+
+            <button class="button button-secondary" onclick="showAlternativeMethod()">
+                🔄 替代打卡方法
+            </button>
+
+            <div id="helpContent"></div>
+        </div>
+
+        <!-- 強制打卡工具 -->
+        <div class="card">
+            <h3 style="margin-bottom: 16px; color: var(--text-dark);">💪 強制打卡工具</h3>
+            <p style="margin-bottom: 16px; color: var(--text-light); font-size: 0.9rem;">
+                如果標準方法無效，使用以下方法強制開啟打卡網站
+            </p>
+
+            <button class="button button-primary" onclick="forceOpenSite()">
+                🚀 強制開啟打卡網站
+            </button>
+
+            <button class="button button-secondary" onclick="copyUrlToClipboard()">
+                📋 複製網址到剪貼簿
+            </button>
+
+            <button class="button button-warning" onclick="createBookmark()">
+                🔖 建立打卡書籤
+            </button>
+
+            <div class="url-display" id="currentUrl">
+                當前打卡網址：loading...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全域變數
+        let debugLog = [];
+        let testResults = {};
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            updateCurrentUrl();
+            addDebugLog('系統初始化完成', 'info');
+        });
+
+        // 更新時間
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-TW', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            const dateStr = now.toLocaleDateString('zh-TW', { 
+                year: 'numeric',
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            });
+            
+            document.getElementById('currentTime').textContent = timeStr;
+            document.getElementById('currentDate').textContent = dateStr;
+        }
+
+        // 更新當前網址顯示
+        function updateCurrentUrl() {
+            const url = document.getElementById('testUrl').value;
+            document.getElementById('currentUrl').textContent = `當前打卡網址：${url}`;
+        }
+
+        // 添加調試日誌
+        function addDebugLog(message, level = 'info') {
+            const timestamp = new Date().toLocaleTimeString('zh-TW');
+            const entry = { timestamp, message, level };
+            debugLog.push(entry);
+            
+            const logContainer = document.getElementById('debugLog');
+            const logElement = document.createElement('div');
+            logElement.className = `log-entry log-${level}`;
+            logElement.innerHTML = `<strong>[${level.toUpperCase()}]</strong> ${timestamp} - ${message}`;
+            
+            logContainer.appendChild(logElement);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            console.log(`[${level.toUpperCase()}] ${message}`);
+        }
+
+        // 清除調試日誌
+        function clearDebugLog() {
+            debugLog = [];
+            document.getElementById('debugLog').innerHTML = `
+                <div class="log-entry log-info">
+                    <strong>[INFO]</strong> 日誌已清除
+                </div>
+            `;
+            addDebugLog('調試日誌已清除', 'info');
+        }
+
+        // 執行系統檢測
+        function runSystemTests() {
+            addDebugLog('開始執行系統相容性檢測', 'info');
+            
+            // 瀏覽器檢測
+            const userAgent = navigator.userAgent;
+            const isSafari = /^((?!chrome|android).)*safari/i.test(userAgent);
+            const isChrome = /chrome/i.test(userAgent);
+            const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+            
+            let browserResult = 'unknown';
+            if (isSafari && isIOS) {
+                browserResult = 'iOS Safari';
+                updateTestStatus('browserTest', 'success', 'iOS Safari ✓');
+            } else if (isChrome) {
+                browserResult = 'Chrome';
+                updateTestStatus('browserTest', 'success', 'Chrome ✓');
+            } else {
+                browserResult = userAgent.substring(0, 50);
+                updateTestStatus('browserTest', 'warning', '其他瀏覽器');
+            }
+            addDebugLog(`瀏覽器檢測：${browserResult}`, 'info');
+
+            // JavaScript 檢測
+            try {
+                const testFunc = () => true;
+                const jsWorking = testFunc();
+                updateTestStatus('jsTest', 'success', 'JavaScript ✓');
+                addDebugLog('JavaScript 功能正常', 'success');
+            } catch (e) {
+                updateTestStatus('jsTest', 'error', 'JavaScript ✗');
+                addDebugLog('JavaScript 功能異常：' + e.message, 'error');
+            }
+
+            // 彈窗權限檢測
+            setTimeout(() => {
+                try {
+                    const popup = window.open('', '_blank', 'width=1,height=1');
+                    if (popup && !popup.closed) {
+                        popup.close();
+                        updateTestStatus('popupTest', 'success', '彈窗允許 ✓');
+                        addDebugLog('彈窗權限正常', 'success');
+                    } else {
+                        updateTestStatus('popupTest', 'error', '彈窗被阻擋 ✗');
+                        addDebugLog('彈窗被瀏覽器阻擋', 'error');
+                    }
+                } catch (e) {
+                    updateTestStatus('popupTest', 'error', '彈窗測試失敗 ✗');
+                    addDebugLog('彈窗測試異常：' + e.message, 'error');
+                }
+            }, 1000);
+
+            // 網路連線檢測
+            if (navigator.onLine) {
+                updateTestStatus('networkTest', 'success', '網路連線 ✓');
+                addDebugLog('網路連線正常', 'success');
+            } else {
+                updateTestStatus('networkTest', 'error', '網路離線 ✗');
+                addDebugLog('網路連線異常', 'error');
+            }
+
+            // 本地儲存檢測
+            try {
+                localStorage.setItem('test', 'value');
+                const stored = localStorage.getItem('test');
+                localStorage.removeItem('test');
+                
+                if (stored === 'value') {
+                    updateTestStatus('storageTest', 'success', '本地儲存 ✓');
+                    addDebugLog('本地儲存功能正常', 'success');
+                } else {
+                    updateTestStatus('storageTest', 'error', '本地儲存 ✗');
+                    addDebugLog('本地儲存功能異常', 'error');
+                }
+            } catch (e) {
+                updateTestStatus('storageTest', 'error', '本地儲存 ✗');
+                addDebugLog('本地儲存測試失敗：' + e.message, 'error');
+            }
+        }
+
+        // 更新測試狀態
+        function updateTestStatus(testId, status, text) {
+            const element = document.getElementById(testId);
+            const indicator = element.querySelector('.status-indicator');
+            
+            indicator.className = `status-indicator status-${status}`;
+            element.innerHTML = `
+                <span class="status-indicator status-${status}"></span>
+                ${text}
+            `;
+        }
+
+        // 測試基本開啟功能
+        function testBasicOpen() {
+            const url = document.getElementById('testUrl').value;
+            addDebugLog(`測試基本開啟功能：${url}`, 'info');
+            
+            showProgressBar();
+            
+            try {
+                const newWindow = window.open(url, '_blank');
+                
+                setTimeout(() => {
+                    hideProgressBar();
+                    
+                    if (newWindow && !newWindow.closed) {
+                        showTestResult('success', '✅ 基本開啟功能正常！新視窗已開啟。');
+                        addDebugLog('基本開啟功能測試成功', 'success');
+                        
+                        // 5秒後檢查視窗狀態
+                        setTimeout(() => {
+                            if (!newWindow.closed) {
+                                addDebugLog('新視窗仍然開啟，功能正常', 'success');
+                            } else {
+                                addDebugLog('新視窗已關閉', 'info');
+                            }
+                        }, 5000);
+                    } else {
+                        showTestResult('error', '❌ 基本開啟功能失敗！可能是彈窗被阻擋。');
+                        addDebugLog('基本開啟功能測試失敗：彈窗被阻擋', 'error');
+                    }
+                }, 2000);
+                
+            } catch (error) {
+                hideProgressBar();
+                showTestResult('error', `❌ 開啟失敗：${error.message}`);
+                addDebugLog(`開啟失敗：${error.message}`, 'error');
+            }
+        }
+
+        // 測試延遲開啟
+        function testWithDelay() {
+            const url = document.getElementById('testUrl').value;
+            addDebugLog(`測試延遲開啟：${url}`, 'info');
+            
+            showProgressBar();
+            
+            setTimeout(() => {
+                try {
+                    const newWindow = window.open(url, '_blank');
+                    hideProgressBar();
+                    
+                    if (newWindow && !newWindow.closed) {
+                        showTestResult('success', '✅ 延遲開啟測試成功！');
+                        addDebugLog('延遲開啟測試成功', 'success');
+                    } else {
+                        showTestResult('error', '❌ 延遲開啟測試失敗！');
+                        addDebugLog('延遲開啟測試失敗', 'error');
+                    }
+                } catch (error) {
+                    hideProgressBar();
+                    showTestResult('error', `❌ 延遲開啟失敗：${error.message}`);
+                    addDebugLog(`延遲開啟失敗：${error.message}`, 'error');
+                }
+            }, 3000);
+        }
+
+        // 測試彈窗設定
+        function testPopupSettings() {
+            addDebugLog('檢查彈窗設定', 'info');
+            
+            const popup1 = window.open('', '_blank', 'width=100,height=100');
+            const popup2 = window.open('', '_blank', 'popup=yes');
+            const popup3 = window.open('', '_blank', 'noopener,noreferrer');
+            
+            setTimeout(() => {
+                let workingMethods = [];
+                
+                if (popup1 && !popup1.closed) {
+                    workingMethods.push('標準方式');
+                    popup1.close();
+                }
+                
+                if (popup2 && !popup2.closed) {
+                    workingMethods.push('popup參數');
+                    popup2.close();
+                }
+                
+                if (popup3 && !popup3.closed) {
+                    workingMethods.push('安全方式');
+                    popup3.close();
+                }
+                
+                if (workingMethods.length > 0) {
+                    showTestResult('success', `✅ 可用方法：${workingMethods.join(', ')}`);
+                    addDebugLog(`彈窗測試成功，可用方法：${workingMethods.join(', ')}`, 'success');
+                } else {
+                    showTestResult('error', '❌ 所有彈窗方法都被阻擋');
+                    addDebugLog('所有彈窗方法都被阻擋', 'error');
+                }
+            }, 2000);
+        }
+
+        // 測試備用方案
+        function testFallbackMethod() {
+            const url = document.getElementById('testUrl').value;
+            addDebugLog(`測試備用方案：${url}`, 'info');
+            
+            try {
+                // 方法一：location.href
+                if (confirm('測試方法一：直接跳轉（會離開當前頁面）\\n\\n點擊確定測試，取消則跳過')) {
+                    window.location.href = url;
+                    return;
+                }
+                
+                // 方法二：創建連結並點擊
+                const link = document.createElement('a');
+                link.href = url;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showTestResult('info', '✅ 備用方案已執行（創建連結方式）');
+                addDebugLog('備用方案測試：創建連結方式', 'info');
+                
+            } catch (error) {
+                showTestResult('error', `❌ 備用方案失敗：${error.message}`);
+                addDebugLog(`備用方案失敗：${error.message}`, 'error');
+            }
+        }
+
+        // 顯示進度條
+        function showProgressBar() {
+            const progressBar = document.getElementById('testProgressBar');
+            const progress = document.getElementById('testProgress');
+            
+            progressBar.classList.remove('hidden');
+            progress.style.width = '0%';
+            
+            let width = 0;
+            const interval = setInterval(() => {
+                width += 10;
+                progress.style.width = width + '%';
+                
+                if (width >= 100) {
+                    clearInterval(interval);
+                }
+            }, 200);
+        }
+
+        // 隱藏進度條
+        function hideProgressBar() {
+            document.getElementById('testProgressBar').classList.add('hidden');
+        }
+
+        // 顯示測試結果
+        function showTestResult(type, message) {
+            const resultContainer = document.getElementById('testResult');
+            const className = type === 'success' ? 'success-details' : 'error-details';
+            
+            resultContainer.innerHTML = `
+                <div class="${className}">
+                    ${message}
+                </div>
+            `;
+        }
+
+        // 強制開啟網站
+        function forceOpenSite() {
+            const url = document.getElementById('testUrl').value;
+            addDebugLog(`強制開啟網站：${url}`, 'info');
+            
+            try {
+                // 嘗試多種方法
+                const methods = [
+                    () => window.open(url, '_blank'),
+                    () => window.open(url, '_blank', 'noopener,noreferrer'),
+                    () => {
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.target = '_blank';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                ];
+                
+                for (let i = 0; i < methods.length; i++) {
+                    try {
+                        methods[i]();
+                        addDebugLog(`強制開啟方法 ${i + 1} 已執行`, 'info');
+                        break;
+                    } catch (e) {
+                        addDebugLog(`強制開啟方法 ${i + 1} 失敗：${e.message}`, 'warning');
+                    }
+                }
+                
+                showTestResult('info', '✅ 強制開啟指令已執行，請檢查是否有新視窗開啟');
+                
+            } catch (error) {
+                showTestResult('error', `❌ 強制開啟失敗：${error.message}`);
+                addDebugLog(`強制開啟失敗：${error.message}`, 'error');
+            }
+        }
+
+        // 複製網址到剪貼簿
+        async function copyUrlToClipboard() {
+            const url = document.getElementById('testUrl').value;
+            
+            try {
+                await navigator.clipboard.writeText(url);
+                showTestResult('success', '✅ 網址已複製到剪貼簿！您可以手動開啟瀏覽器並貼上網址。');
+                addDebugLog('網址已複製到剪貼簿', 'success');
+            } catch (error) {
+                // 備用方案
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                showTestResult('success', '✅ 網址已複製！請手動開啟瀏覽器並貼上。');
+                addDebugLog('網址已複製（備用方案）', 'success');
+            }
+        }
+
+        // 建立打卡書籤
+        function createBookmark() {
+            const url = document.getElementById('testUrl').value;
+            const bookmarkScript = `javascript:window.open('${url}', '_blank');`;
+            
+            try {
+                navigator.clipboard.writeText(bookmarkScript);
+                showTestResult('success', `✅ 打卡書籤已複製！\\n\\n使用方法：\\n1. 建立新書籤\\n2. 貼上剪貼簿內容作為網址\\n3. 點擊書籤即可打卡`);
+                addDebugLog('打卡書籤已生成並複製', 'success');
+            } catch (error) {
+                showTestResult('info', `📋 請手動複製以下書籤：\\n\\n${bookmarkScript}`);
+                addDebugLog('書籤生成完成，需手動複製', 'info');
+            }
+        }
+
+        // 顯示彈窗說明
+        function showPopupHelp() {
+            const helpContent = document.getElementById('helpContent');
+            helpContent.innerHTML = `
+                <div class="success-details">
+                    <strong>🚫 彈窗被阻擋的解決方案：</strong><br><br>
+                    
+                    <strong>Safari (iOS)：</strong><br>
+                    • 設定 → Safari → 一般 → 阻擋彈出視窗（關閉）<br>
+                    • 設定 → Safari → 網站設定 → 彈出視窗（允許）<br><br>
+                    
+                    <strong>Chrome：</strong><br>
+                    • 點擊網址列左側的鎖頭圖示<br>
+                    • 彈出視窗 → 允許<br><br>
+                    
+                    <strong>通用方法：</strong><br>
+                    • 重新載入頁面後再試<br>
+                    • 嘗試使用「複製網址」功能手動開啟<br>
+                    • 使用書籤功能
+                </div>
+            `;
+            addDebugLog('顯示彈窗說明', 'info');
+        }
+
+        // 顯示 Safari 說明
+        function showSafariHelp() {
+            const helpContent = document.getElementById('helpContent');
+            helpContent.innerHTML = `
+                <div class="success-details">
+                    <strong>🍎 Safari 特殊設定說明：</strong><br><br>
+                    
+                    <strong>必要設定：</strong><br>
+                    • 設定 → Safari → 進階 → JavaScript（開啟）<br>
+                    • 設定 → Safari → 隱私權與安全性 → 防止跨網站追蹤（關閉）<br>
+                    • 設定 → Safari → 一般 → 阻擋彈出視窗（關閉）<br><br>
+                    
+                    <strong>如果仍然無效：</strong><br>
+                    • 清除 Safari 快取：設定 → Safari → 清除瀏覽記錄與網站資料<br>
+                    • 重新啟動 Safari<br>
+                    • 嘗試使用私密瀏覽模式
+                </div>
+            `;
+            addDebugLog('顯示 Safari 說明', 'info');
+        }
+
+        // 顯示替代方法
+        function showAlternativeMethod() {
+            const helpContent = document.getElementById('helpContent');
+            helpContent.innerHTML = `
+                <div class="success-details">
+                    <strong>🔄 替代打卡方法：</strong><br><br>
+                    
+                    <strong>方法一：手動複製網址</strong><br>
+                    1. 點擊「複製網址到剪貼簿」<br>
+                    2. 開啟 Safari 瀏覽器<br>
+                    3. 貼上網址並前往<br><br>
+                    
+                    <strong>方法二：使用書籤</strong><br>
+                    1. 點擊「建立打卡書籤」<br>
+                    2. 建立新書籤並貼上內容<br>
+                    3. 點擊書籤即可打卡<br><br>
+                    
+                    <strong>方法三：加入主畫面捷徑</strong><br>
+                    1. 用 Safari 開啟 Mphasis 網站<br>
+                    2. 點擊分享 → 加入主畫面<br>
+                    3. 直接從主畫面開啟
+                </div>
+            `;
+            addDebugLog('顯示替代方法說明', 'info');
+        }
+
+        // 監聽網址變更
+        document.getElementById('testUrl').addEventListener('input', updateCurrentUrl);
+
+        // 監聽錯誤
+        window.addEventListener('error', function(e) {
+            addDebugLog(`JavaScript 錯誤：${e.message}`, 'error');
+        });
+
+        // 頁面載入完成
+        addDebugLog('調試工具載入完成', 'success');
+    </script>
+</body>
+</html>
+
