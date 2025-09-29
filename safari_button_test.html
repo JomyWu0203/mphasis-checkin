@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safari 按鈕測試</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            padding: 24px;
+            color: #333;
+        }
+        
+        .test-button {
+            width: 100%;
+            padding: 16px;
+            margin: 12px 0;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary { background: #4CAF50; color: white; }
+        .btn-secondary { background: #2196F3; color: white; }
+        .btn-warning { background: #FF9800; color: white; }
+        
+        .test-button:active {
+            transform: scale(0.98);
+        }
+        
+        .log-area {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+            font-family: monospace;
+            font-size: 14px;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .settings-test {
+            background: #e3f2fd;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 16px 0;
+        }
+        
+        input[type="time"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 8px 0;
+        }
+        
+        .week-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+        }
+        
+        .day-btn {
+            padding: 8px 12px;
+            border: 2px solid #6A1B9A;
+            background: white;
+            color: #6A1B9A;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .day-btn.selected {
+            background: #6A1B9A;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h2 style="text-align: center; color: #FF6B35; margin-bottom: 24px;">
+            🔧 Safari 按鈕功能測試
+        </h2>
+        
+        <!-- 基本按鈕測試 -->
+        <h3>1. 基本點擊測試</h3>
+        <button class="test-button btn-primary" onclick="testBasicClick()">
+            ✅ 基本點擊測試
+        </button>
+        
+        <button class="test-button btn-secondary" onclick="testConsoleLog()">
+            📝 Console 日誌測試
+        </button>
+        
+        <button class="test-button btn-warning" onclick="testAlert()">
+            🚨 Alert 彈窗測試
+        </button>
+        
+        <!-- 設定測試 -->
+        <div class="settings-test">
+            <h3>2. 設定功能測試</h3>
+            <label>打卡時間：</label>
+            <input type="time" id="testTime" value="09:00">
+            
+            <label>提醒分鐘：</label>
+            <input type="number" id="testMinutes" value="5" min="0" max="60">
+            
+            <label>選擇工作日：</label>
+            <div class="week-selector">
+                <button class="day-btn" onclick="toggleDay(1)">一</button>
+                <button class="day-btn" onclick="toggleDay(2)">二</button>
+                <button class="day-btn" onclick="toggleDay(3)">三</button>
+                <button class="day-btn" onclick="toggleDay(4)">四</button>
+                <button class="day-btn" onclick="toggleDay(5)">五</button>
+                <button class="day-btn" onclick="toggleDay(6)">六</button>
+                <button class="day-btn" onclick="toggleDay(0)">日</button>
+            </div>
+        </div>
+        
+        <!-- 模擬原始功能 -->
+        <h3>3. 模擬原始功能</h3>
+        <button class="test-button btn-primary" onclick="simulateQuickSetup()">
+            ⚡ 模擬一鍵設定
+        </button>
+        
+        <button class="test-button btn-secondary" onclick="simulateIOSCalendar()">
+            📅 模擬 iOS 行事曆
+        </button>
+        
+        <!-- 日誌區域 -->
+        <h3>4. 執行日誌</h3>
+        <div class="log-area" id="logArea">
+            等待測試...
+        </div>
+        
+        <button class="test-button" onclick="clearLog()" style="background: #f44336; color: white;">
+            🗑️ 清除日誌
+        </button>
+    </div>
+
+    <script>
+        let selectedDays = [1, 2, 3, 4, 5]; // 預設選擇週一到週五
+        
+        function log(message) {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            logArea.innerHTML += `[${timestamp}] ${message}\n`;
+            logArea.scrollTop = logArea.scrollHeight;
+            console.log(`[Safari 測試] ${message}`);
+        }
+        
+        function testBasicClick() {
+            log('✅ 基本點擊功能正常');
+        }
+        
+        function testConsoleLog() {
+            console.log('🧪 Safari Console 測試');
+            log('📝 Console 日誌已輸出，請檢查 F12 開發者工具');
+        }
+        
+        function testAlert() {
+            alert('🚨 Alert 功能測試成功！');
+            log('🚨 Alert 彈窗功能正常');
+        }
+        
+        function toggleDay(day) {
+            const button = event.target;
+            const index = selectedDays.indexOf(day);
+            
+            if (index > -1) {
+                selectedDays.splice(index, 1);
+                button.classList.remove('selected');
+                log(`❌ 取消選擇：週${['日','一','二','三','四','五','六'][day]}`);
+            } else {
+                selectedDays.push(day);
+                button.classList.add('selected');
+                log(`✅ 選擇：週${['日','一','二','三','四','五','六'][day]}`);
+            }
+            
+            log(`📅 目前選擇：${selectedDays.map(d => ['日','一','二','三','四','五','六'][d]).join('、')}`);
+        }
+        
+        function simulateQuickSetup() {
+            const time = document.getElementById('testTime').value;
+            const minutes = document.getElementById('testMinutes').value;
+            
+            if (!time) {
+                log('❌ 請設定打卡時間');
+                alert('❌ 請設定打卡時間');
+                return;
+            }
+            
+            if (selectedDays.length === 0) {
+                log('❌ 請選擇至少一個打卡日期');
+                alert('❌ 請選擇至少一個打卡日期');
+                return;
+            }
+            
+            log('⚡ 模擬快速設定開始...');
+            log(`🕐 時間：${time}`);
+            log(`⏰ 提醒：提前${minutes}分鐘`);
+            log(`📅 日期：${selectedDays.map(d => ['日','一','二','三','四','五','六'][d]).join('、')}`);
+            
+            setTimeout(() => {
+                log('✅ 快速設定完成！正在呼叫 iOS 行事曆...');
+                simulateIOSCalendar();
+            }, 1000);
+        }
+        
+        function simulateIOSCalendar() {
+            log('📅 模擬 iOS 行事曆設定開始...');
+            
+            try {
+                // 檢查是否為 iOS
+                const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                log(`📱 裝置檢測：${isiOS ? 'iOS 裝置' : '非 iOS 裝置'}`);
+                
+                // 模擬 iCal 內容生成
+                const time = document.getElementById('testTime').value || '09:00';
+                const minutes = document.getElementById('testMinutes').value || '5';
+                
+                const icalContent = generateTestICal(time, minutes);
+                log('📋 iCal 內容已生成');
+                
+                if (isiOS) {
+                    log('🚀 iOS 裝置：顯示專用下載選項');
+                    showTestIOSOptions(icalContent);
+                } else {
+                    log('💻 桌面裝置：嘗試自動下載');
+                    tryTestDownload(icalContent);
+                }
+                
+            } catch (error) {
+                log(`❌ 執行錯誤：${error.message}`);
+                console.error('Safari 測試錯誤:', error);
+            }
+        }
+        
+        function generateTestICal(time, minutes) {
+            const [hour, minute] = time.split(':').map(Number);
+            const reminderHour = hour;
+            const reminderMinute = minute - parseInt(minutes);
+            
+            const icalContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Mphasis打卡系統//NONSGML//EN
+BEGIN:VEVENT
+SUMMARY:🎯 Mphasis 自動打卡提醒 (測試)
+DESCRIPTION:📱 測試版本的行事曆提醒
+DTSTART:20250101T${reminderHour.toString().padStart(2, '0')}${Math.max(0, reminderMinute).toString().padStart(2, '0')}00Z
+DTEND:20250101T${reminderHour.toString().padStart(2, '0')}${Math.max(15, reminderMinute + 15).toString().padStart(2, '0')}00Z
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR
+BEGIN:VALARM
+TRIGGER:-PT0M
+ACTION:DISPLAY
+DESCRIPTION:🚀 測試打卡提醒！
+END:VALARM
+END:VEVENT
+END:VCALENDAR`;
+            
+            return icalContent;
+        }
+        
+        function showTestIOSOptions(icalContent) {
+            log('📱 顯示 iOS 專用選項模態框');
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+            
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 16px; padding: 24px; margin: 20px; max-width: 400px;">
+                    <h3 style="color: #FF6B35; text-align: center;">📅 iOS 行事曆測試</h3>
+                    
+                    <button onclick="testDataURL('${btoa(icalContent)}')" 
+                            style="width: 100%; padding: 12px; margin: 8px 0; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        🚀 測試 Data URL 方法
+                    </button>
+                    
+                    <button onclick="testDownload('${btoa(icalContent)}')" 
+                            style="width: 100%; padding: 12px; margin: 8px 0; background: #2196F3; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        📥 測試下載方法
+                    </button>
+                    
+                    <button onclick="testCopy('${btoa(icalContent)}')" 
+                            style="width: 100%; padding: 12px; margin: 8px 0; background: #FF9800; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        📋 測試複製方法
+                    </button>
+                    
+                    <button onclick="closeTestModal()" 
+                            style="width: 100%; padding: 8px; margin: 16px 0 0 0; background: #f5f5f5; color: #666; border: none; border-radius: 8px; cursor: pointer;">
+                        關閉
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            window.testModal = modal;
+        }
+        
+        function testDataURL(encodedContent) {
+            const icalContent = atob(encodedContent);
+            log('🚀 測試 Data URL 方法...');
+            
+            try {
+                const dataUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(icalContent);
+                const newWindow = window.open(dataUrl, '_blank');
+                
+                if (newWindow) {
+                    log('✅ Data URL 成功開啟新視窗');
+                } else {
+                    log('❌ Data URL 失敗：彈出視窗被阻擋');
+                }
+            } catch (error) {
+                log(`❌ Data URL 錯誤：${error.message}`);
+            }
+        }
+        
+        function testDownload(encodedContent) {
+            const icalContent = atob(encodedContent);
+            log('📥 測試下載方法...');
+            
+            try {
+                const element = document.createElement('a');
+                element.setAttribute('href', 'data:text/calendar;charset=utf-8,' + encodeURIComponent(icalContent));
+                element.setAttribute('download', 'test-calendar.ics');
+                element.style.display = 'none';
+                
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+                
+                log('✅ 下載指令已執行');
+            } catch (error) {
+                log(`❌ 下載錯誤：${error.message}`);
+            }
+        }
+        
+        function testCopy(encodedContent) {
+            const icalContent = atob(encodedContent);
+            log('📋 測試複製方法...');
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(icalContent).then(() => {
+                    log('✅ 複製到剪貼簿成功');
+                }).catch((error) => {
+                    log(`❌ 剪貼簿 API 失敗：${error.message}`);
+                    testFallbackCopy(icalContent);
+                });
+            } else {
+                log('⚠️ 不支援 Clipboard API，使用備用方法');
+                testFallbackCopy(icalContent);
+            }
+        }
+        
+        function testFallbackCopy(icalContent) {
+            try {
+                const textArea = document.createElement('textarea');
+                textArea.value = icalContent;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                
+                const success = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                if (success) {
+                    log('✅ 備用複製方法成功');
+                } else {
+                    log('❌ 備用複製方法失敗');
+                }
+            } catch (error) {
+                log(`❌ 備用複製錯誤：${error.message}`);
+            }
+        }
+        
+        function closeTestModal() {
+            if (window.testModal) {
+                document.body.removeChild(window.testModal);
+                window.testModal = null;
+            }
+            log('📱 關閉測試模態框');
+        }
+        
+        function tryTestDownload(icalContent) {
+            log('💻 桌面下載測試...');
+            
+            try {
+                const blob = new Blob([icalContent], { type: 'text/calendar;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'test-calendar.ics';
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                log('✅ 桌面下載完成');
+                
+            } catch (error) {
+                log(`❌ 桌面下載錯誤：${error.message}`);
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('logArea').innerHTML = '';
+            log('🗑️ 日誌已清除');
+        }
+        
+        // 初始化
+        window.addEventListener('load', function() {
+            log('🚀 Safari 按鈕測試工具已載入');
+            log('📱 UserAgent: ' + navigator.userAgent);
+            log('🔧 請開始測試各項功能');
+            
+            // 預設選擇工作日
+            selectedDays.forEach(day => {
+                const buttons = document.querySelectorAll('.day-btn');
+                buttons[day === 0 ? 6 : day - 1].classList.add('selected');
+            });
+        });
+        
+        window.addEventListener('error', function(event) {
+            log(`❌ JavaScript 錯誤：${event.error.message}`);
+            console.error('全域錯誤:', event.error);
+        });
+    </script>
+</body>
+</html>
