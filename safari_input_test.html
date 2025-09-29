@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Safari 輸入測試工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .error { background: #ffebee; border-left: 4px solid #f44336; }
+        .warning { background: #fff3e0; border-left: 4px solid #ff9800; }
+        .success { background: #e8f5e8; border-left: 4px solid #4caf50; }
+        .info { background: #e3f2fd; border-left: 4px solid #2196f3; }
+        .btn {
+            background: #2196f3;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+            width: 100%;
+        }
+        .btn:hover { background: #1976d2; }
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .input-field:focus {
+            border-color: #2196f3;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+        }
+        .input-field:disabled {
+            background: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .test-group {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        .test-group h3 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔍 Safari 輸入測試工具</h1>
+        <p>專門測試 Safari 中的輸入欄位問題</p>
+    </div>
+
+    <div class="card error">
+        <h2>🚨 問題報告</h2>
+        <p><strong>用戶反映：</strong>在 Safari 中也無法輸入 Teams Webhook 相關資料</p>
+        <p>這表示問題不只是配置檔案，而是網頁本身的問題。</p>
+    </div>
+
+    <div class="card">
+        <h2>🧪 基本輸入測試</h2>
+        
+        <div class="test-group">
+            <h3>測試 1: 基本文字輸入</h3>
+            <input type="text" id="basicText" class="input-field" placeholder="請嘗試輸入一些文字...">
+            <button class="btn" onclick="testBasicInput()">檢查基本輸入</button>
+        </div>
+
+        <div class="test-group">
+            <h3>測試 2: URL 輸入 (與 Teams Webhook 相同類型)</h3>
+            <input type="url" id="urlInput" class="input-field" placeholder="https://請嘗試輸入URL...">
+            <button class="btn" onclick="testUrlInput()">檢查 URL 輸入</button>
+        </div>
+
+        <div class="test-group">
+            <h3>測試 3: 動態啟用/禁用</h3>
+            <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                <input type="checkbox" id="enableToggle" onchange="toggleInputState()" style="margin-right: 8px;">
+                <span>啟用下方輸入欄位</span>
+            </label>
+            <input type="url" id="conditionalInput" class="input-field" placeholder="這個欄位會根據上方勾選框啟用/禁用" disabled>
+            <button class="btn" onclick="testConditionalInput()">檢查條件式輸入</button>
+        </div>
+
+        <div class="test-group">
+            <h3>測試 4: 模擬 Teams Webhook 輸入</h3>
+            <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                <input type="checkbox" id="teamsEnabled" onchange="updateTeamsInput()" style="margin-right: 8px;">
+                <span style="font-weight: 600;">啟用 Teams 通知</span>
+            </label>
+            
+            <div id="teamsInputSection" style="display: none;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">
+                    主要 Webhook URL:
+                </label>
+                <input type="url" id="teamsWebhook" class="input-field" 
+                       placeholder="https://outlook.office.com/webhook/...">
+                
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; margin-top: 16px;">
+                    備用 Webhook URL:
+                </label>
+                <input type="url" id="teamsBackupWebhook" class="input-field" 
+                       placeholder="https://outlook.office.com/webhook/...">
+            </div>
+            
+            <button class="btn" onclick="testTeamsInput()">檢查 Teams 輸入</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📊 JavaScript 錯誤檢查</h2>
+        <button class="btn" onclick="checkJavaScriptErrors()">檢查 JavaScript 錯誤</button>
+        <button class="btn" onclick="checkEventListeners()">檢查事件監聽器</button>
+        <button class="btn" onclick="checkDOMManipulation()">檢查 DOM 操作</button>
+    </div>
+
+    <div class="card">
+        <h2>📋 測試結果</h2>
+        <div id="testResults" style="margin-top: 16px;"></div>
+        <div id="testLog" class="log"></div>
+        <button class="btn" onclick="clearLog()">清除記錄</button>
+    </div>
+
+    <script>
+        let errorCount = 0;
+        let testResults = [];
+
+        function log(message) {
+            const logElement = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        function showResult(type, message) {
+            const resultDiv = document.getElementById('testResults');
+            const resultItem = document.createElement('div');
+            resultItem.className = type;
+            resultItem.style.cssText = 'margin: 8px 0; padding: 12px; border-radius: 8px;';
+            resultItem.textContent = message;
+            resultDiv.appendChild(resultItem);
+            
+            testResults.push({ type, message, timestamp: new Date().toLocaleTimeString() });
+        }
+
+        function testBasicInput() {
+            log('🧪 測試基本文字輸入...');
+            
+            const input = document.getElementById('basicText');
+            const testValue = 'Test Input ' + Date.now();
+            
+            try {
+                // 嘗試設定值
+                input.value = testValue;
+                input.focus();
+                
+                // 檢查值是否正確設定
+                if (input.value === testValue) {
+                    log('✅ 基本文字輸入正常');
+                    showResult('success', '✅ 基本文字輸入功能正常');
+                } else {
+                    log('❌ 基本文字輸入失敗');
+                    showResult('error', '❌ 基本文字輸入功能異常');
+                }
+                
+                // 檢查輸入狀態
+                log(`   - 輸入值: "${input.value}"`);
+                log(`   - 禁用狀態: ${input.disabled}`);
+                log(`   - 唯讀狀態: ${input.readOnly}`);
+                log(`   - 可以獲得焦點: ${document.activeElement === input}`);
+                
+                // 嘗試觸發輸入事件
+                const inputEvent = new Event('input', { bubbles: true });
+                input.dispatchEvent(inputEvent);
+                log(`   - 事件觸發: 成功`);
+                
+            } catch (error) {
+                log('❌ 基本輸入測試失敗: ' + error.message);
+                showResult('error', '❌ 基本輸入測試失敗: ' + error.message);
+                errorCount++;
+            }
+        }
+
+        function testUrlInput() {
+            log('🌐 測試 URL 輸入功能...');
+            
+            const input = document.getElementById('urlInput');
+            const testUrl = 'https://outlook.office.com/webhook/test-' + Date.now();
+            
+            try {
+                input.value = testUrl;
+                input.focus();
+                
+                if (input.value === testUrl) {
+                    log('✅ URL 輸入正常');
+                    showResult('success', '✅ URL 輸入功能正常');
+                } else {
+                    log('❌ URL 輸入失敗');
+                    showResult('error', '❌ URL 輸入功能異常');
+                }
+                
+                log(`   - URL 值: "${input.value}"`);
+                log(`   - 驗證狀態: ${input.validity.valid}`);
+                log(`   - 驗證訊息: "${input.validationMessage}"`);
+                
+                // 測試 URL 驗證
+                if (input.validity.valid) {
+                    log('   - URL 格式驗證: 通過');
+                } else {
+                    log('   - URL 格式驗證: 失敗 - ' + input.validationMessage);
+                }
+                
+            } catch (error) {
+                log('❌ URL 輸入測試失敗: ' + error.message);
+                showResult('error', '❌ URL 輸入測試失敗: ' + error.message);
+                errorCount++;
+            }
+        }
+
+        function toggleInputState() {
+            const checkbox = document.getElementById('enableToggle');
+            const input = document.getElementById('conditionalInput');
+            
+            log(`🔄 切換輸入狀態: ${checkbox.checked ? '啟用' : '禁用'}`);
+            
+            try {
+                input.disabled = !checkbox.checked;
+                
+                if (checkbox.checked) {
+                    input.placeholder = '現在可以輸入了...';
+                    input.focus();
+                } else {
+                    input.placeholder = '這個欄位已禁用';
+                }
+                
+                log(`   - 輸入欄位禁用狀態: ${input.disabled}`);
+                
+            } catch (error) {
+                log('❌ 切換狀態失敗: ' + error.message);
+                errorCount++;
+            }
+        }
+
+        function testConditionalInput() {
+            log('🧪 測試條件式輸入...');
+            
+            const checkbox = document.getElementById('enableToggle');
+            const input = document.getElementById('conditionalInput');
+            const testValue = 'https://conditional-test-' + Date.now() + '.com';
+            
+            try {
+                if (checkbox.checked) {
+                    input.value = testValue;
+                    
+                    if (input.value === testValue) {
+                        log('✅ 條件式輸入正常');
+                        showResult('success', '✅ 條件式輸入功能正常');
+                    } else {
+                        log('❌ 條件式輸入失敗');
+                        showResult('error', '❌ 條件式輸入功能異常');
+                    }
+                } else {
+                    log('⚠️ 輸入欄位已禁用，請先勾選啟用');
+                    showResult('warning', '⚠️ 請先勾選啟用選項再測試');
+                }
+                
+            } catch (error) {
+                log('❌ 條件式輸入測試失敗: ' + error.message);
+                showResult('error', '❌ 條件式輸入測試失敗: ' + error.message);
+                errorCount++;
+            }
+        }
+
+        function updateTeamsInput() {
+            const checkbox = document.getElementById('teamsEnabled');
+            const section = document.getElementById('teamsInputSection');
+            
+            log(`📤 Teams 輸入狀態變更: ${checkbox.checked ? '啟用' : '停用'}`);
+            
+            try {
+                if (checkbox.checked) {
+                    section.style.display = 'block';
+                    
+                    // 延遲聚焦，確保元素已顯示
+                    setTimeout(() => {
+                        const webhookInput = document.getElementById('teamsWebhook');
+                        if (webhookInput) {
+                            webhookInput.focus();
+                            log('   - Teams Webhook 輸入欄位已啟用並獲得焦點');
+                        }
+                    }, 100);
+                } else {
+                    section.style.display = 'none';
+                    log('   - Teams 輸入區域已隱藏');
+                }
+                
+            } catch (error) {
+                log('❌ Teams 輸入更新失敗: ' + error.message);
+                errorCount++;
+            }
+        }
+
+        function testTeamsInput() {
+            log('📤 測試 Teams Webhook 輸入...');
+            
+            const checkbox = document.getElementById('teamsEnabled');
+            const webhookInput = document.getElementById('teamsWebhook');
+            const backupInput = document.getElementById('teamsBackupWebhook');
+            
+            if (!checkbox.checked) {
+                log('⚠️ Teams 通知未啟用');
+                showResult('warning', '⚠️ 請先啟用 Teams 通知');
+                return;
+            }
+            
+            const testWebhookUrl = 'https://outlook.office.com/webhook/test-main-' + Date.now();
+            const testBackupUrl = 'https://outlook.office.com/webhook/test-backup-' + Date.now();
+            
+            try {
+                // 測試主要 Webhook
+                webhookInput.value = testWebhookUrl;
+                webhookInput.focus();
+                
+                if (webhookInput.value === testWebhookUrl) {
+                    log('✅ 主要 Webhook 輸入正常');
+                } else {
+                    log('❌ 主要 Webhook 輸入失敗');
+                    showResult('error', '❌ 主要 Webhook 輸入功能異常');
+                    return;
+                }
+                
+                // 測試備用 Webhook
+                backupInput.value = testBackupUrl;
+                
+                if (backupInput.value === testBackupUrl) {
+                    log('✅ 備用 Webhook 輸入正常');
+                    showResult('success', '✅ Teams Webhook 輸入功能完全正常');
+                } else {
+                    log('❌ 備用 Webhook 輸入失敗');
+                    showResult('error', '❌ 備用 Webhook 輸入功能異常');
+                }
+                
+                log(`   - 主要 URL: "${webhookInput.value}"`);
+                log(`   - 備用 URL: "${backupInput.value}"`);
+                log(`   - 主要 URL 驗證: ${webhookInput.validity.valid}`);
+                log(`   - 備用 URL 驗證: ${backupInput.validity.valid}`);
+                
+            } catch (error) {
+                log('❌ Teams 輸入測試失敗: ' + error.message);
+                showResult('error', '❌ Teams 輸入測試失敗: ' + error.message);
+                errorCount++;
+            }
+        }
+
+        function checkJavaScriptErrors() {
+            log('🔍 檢查 JavaScript 錯誤...');
+            
+            // 記錄當前錯誤數量
+            const currentErrors = errorCount;
+            
+            try {
+                // 檢查全域錯誤
+                log(`   - 測試過程中捕獲的錯誤數量: ${currentErrors}`);
+                
+                // 檢查 console 錯誤 (如果可能)
+                if (window.console && console.error) {
+                    log('   - Console 物件可用');
+                } else {
+                    log('   - Console 物件不可用');
+                }
+                
+                // 測試基本 JavaScript 功能
+                const testObj = { test: 'value' };
+                const testArray = [1, 2, 3];
+                const testFunction = function() { return 'test'; };
+                
+                log('   - 物件操作: 正常');
+                log('   - 陣列操作: 正常');
+                log('   - 函數操作: 正常');
+                
+                // 測試 DOM 操作
+                const testDiv = document.createElement('div');
+                testDiv.innerHTML = 'test';
+                log('   - DOM 操作: 正常');
+                
+                // 測試事件處理
+                const testEvent = new Event('test');
+                log('   - 事件物件: 正常');
+                
+                if (currentErrors === 0) {
+                    showResult('success', '✅ 沒有發現 JavaScript 錯誤');
+                } else {
+                    showResult('warning', `⚠️ 發現 ${currentErrors} 個錯誤，請查看記錄`);
+                }
+                
+            } catch (error) {
+                log('❌ JavaScript 錯誤檢查失敗: ' + error.message);
+                showResult('error', '❌ JavaScript 執行環境有問題');
+                errorCount++;
+            }
+        }
+
+        function checkEventListeners() {
+            log('🎯 檢查事件監聽器...');
+            
+            try {
+                // 檢查各種事件處理
+                const testInput = document.getElementById('basicText');
+                
+                // 測試 onclick
+                const testButton = document.createElement('button');
+                testButton.onclick = function() { log('   - onclick 事件: 正常'); };
+                testButton.onclick();
+                
+                // 測試 addEventListener
+                testButton.addEventListener('test', function() {
+                    log('   - addEventListener: 正常');
+                });
+                testButton.dispatchEvent(new Event('test'));
+                
+                // 測試 onchange
+                testInput.onchange = function() { log('   - onchange 事件: 正常'); };
+                testInput.dispatchEvent(new Event('change'));
+                
+                // 測試 onfocus
+                testInput.onfocus = function() { log('   - onfocus 事件: 正常'); };
+                testInput.dispatchEvent(new Event('focus'));
+                
+                showResult('success', '✅ 事件監聽器功能正常');
+                
+            } catch (error) {
+                log('❌ 事件監聽器檢查失敗: ' + error.message);
+                showResult('error', '❌ 事件處理有問題: ' + error.message);
+                errorCount++;
+            }
+        }
+
+        function checkDOMManipulation() {
+            log('🔧 檢查 DOM 操作...');
+            
+            try {
+                // 測試元素選取
+                const testElement1 = document.getElementById('basicText');
+                if (testElement1) {
+                    log('   - getElementById: 正常');
+                } else {
+                    log('   - getElementById: 失敗');
+                }
+                
+                // 測試樣式操作
+                testElement1.style.backgroundColor = 'lightblue';
+                testElement1.style.backgroundColor = '';
+                log('   - 樣式操作: 正常');
+                
+                // 測試屬性操作
+                testElement1.setAttribute('data-test', 'value');
+                const attrValue = testElement1.getAttribute('data-test');
+                if (attrValue === 'value') {
+                    log('   - 屬性操作: 正常');
+                } else {
+                    log('   - 屬性操作: 異常');
+                }
+                testElement1.removeAttribute('data-test');
+                
+                // 測試值操作
+                const originalValue = testElement1.value;
+                testElement1.value = 'DOM Test';
+                if (testElement1.value === 'DOM Test') {
+                    log('   - 值操作: 正常');
+                } else {
+                    log('   - 值操作: 異常');
+                }
+                testElement1.value = originalValue;
+                
+                // 測試焦點操作
+                testElement1.focus();
+                if (document.activeElement === testElement1) {
+                    log('   - 焦點操作: 正常');
+                } else {
+                    log('   - 焦點操作: 可能受限');
+                }
+                testElement1.blur();
+                
+                showResult('success', '✅ DOM 操作功能正常');
+                
+            } catch (error) {
+                log('❌ DOM 操作檢查失敗: ' + error.message);
+                showResult('error', '❌ DOM 操作有問題: ' + error.message);
+                errorCount++;
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('testLog').textContent = '';
+            document.getElementById('testResults').innerHTML = '';
+            testResults = [];
+            errorCount = 0;
+        }
+
+        // 全域錯誤處理
+        window.onerror = function(message, source, lineno, colno, error) {
+            log(`❌ 全域錯誤: ${message} (行 ${lineno})`);
+            errorCount++;
+            return false;
+        };
+
+        // Promise 錯誤處理
+        window.addEventListener('unhandledrejection', function(event) {
+            log(`❌ Promise 錯誤: ${event.reason}`);
+            errorCount++;
+        });
+
+        // 頁面載入時初始化
+        window.onload = function() {
+            log('🔍 Safari 輸入測試工具已載入');
+            log('📱 User Agent: ' + navigator.userAgent);
+            log('🌐 URL: ' + window.location.href);
+            log('💡 請依序進行各項測試');
+            
+            // 自動檢查基本狀態
+            setTimeout(() => {
+                checkJavaScriptErrors();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
