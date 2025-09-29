@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teams 輸入最小測試</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #2196f3;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 8px 0;
+            font-size: 14px;
+            width: 100%;
+        }
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #BA68C8;
+            border-radius: 8px;
+            font-size: 14px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .error { background: #ffebee; color: #c62828; }
+        .info { background: #e3f2fd; color: #1565c0; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🧪 Teams 輸入最小測試</h1>
+        <p>這是一個最簡化的 Teams 設定測試，用來確認輸入功能是否正常</p>
+    </div>
+
+    <div class="card">
+        <h2>📤 Teams 通知設定</h2>
+        
+        <label style="display: flex; align-items: center; margin-bottom: 16px;">
+            <input type="checkbox" id="teamsEnabled" onchange="updateTeamsSettings()" style="margin-right: 8px;">
+            <span style="font-weight: 600; color: #6A1B9A;">啟用 Teams 通知</span>
+        </label>
+        
+        <div id="teamsWebhookSettings" style="display: none;">
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; color: #6A1B9A; margin-bottom: 8px;">
+                    主要 Webhook URL:
+                </label>
+                <input type="url" id="teamsWebhook" class="input-field" 
+                       placeholder="https://outlook.office.com/webhook/..." 
+                       oninput="onWebhookInput()">
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; color: #6A1B9A; margin-bottom: 8px;">
+                    備用 Webhook URL (選填):
+                </label>
+                <input type="url" id="teamsBackupWebhook" class="input-field" 
+                       placeholder="https://outlook.office.com/webhook/..." 
+                       oninput="onWebhookInput()">
+            </div>
+            
+            <button class="btn" onclick="saveTeamsSettings()">💾 儲存設定</button>
+            <button class="btn" onclick="testTeamsNotification()">🧪 測試通知</button>
+        </div>
+    </div>
+
+    <div id="messageArea"></div>
+
+    <div class="card">
+        <h2>🔍 即時狀態</h2>
+        <div id="statusArea" style="font-family: monospace; font-size: 12px; line-height: 1.6;"></div>
+    </div>
+
+    <script>
+        // 簡化的設定物件
+        var settings = {
+            teamsWebhook: '',
+            teamsBackupWebhook: '',
+            teamsEnabled: false
+        };
+
+        function log(message) {
+            const statusArea = document.getElementById('statusArea');
+            const timestamp = new Date().toLocaleTimeString();
+            statusArea.innerHTML += `[${timestamp}] ${message}<br>`;
+            statusArea.scrollTop = statusArea.scrollHeight;
+            console.log(message);
+        }
+
+        function showMessage(message, type) {
+            const messageArea = document.getElementById('messageArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ' + type;
+            messageDiv.textContent = message;
+            messageArea.appendChild(messageDiv);
+            
+            // 5秒後自動移除訊息
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 5000);
+            
+            log(message);
+        }
+
+        function updateTeamsSettings() {
+            const enabled = document.getElementById('teamsEnabled').checked;
+            const webhookSettings = document.getElementById('teamsWebhookSettings');
+            
+            log(`Teams 設定變更: ${enabled ? '啟用' : '停用'}`);
+            
+            if (enabled) {
+                webhookSettings.style.display = 'block';
+                showMessage('Teams 通知已啟用，請輸入 Webhook URL', 'info');
+                
+                // 延遲聚焦到第一個輸入欄位
+                setTimeout(() => {
+                    const webhookInput = document.getElementById('teamsWebhook');
+                    webhookInput.focus();
+                    log('主要 Webhook 輸入欄位已獲得焦點');
+                }, 100);
+            } else {
+                webhookSettings.style.display = 'none';
+                showMessage('Teams 通知已停用', 'info');
+            }
+        }
+
+        function onWebhookInput() {
+            const webhookInput = document.getElementById('teamsWebhook');
+            const backupInput = document.getElementById('teamsBackupWebhook');
+            
+            log(`輸入偵測 - 主要: "${webhookInput.value.substring(0, 50)}${webhookInput.value.length > 50 ? '...' : ''}"`);
+            log(`輸入偵測 - 備用: "${backupInput.value.substring(0, 50)}${backupInput.value.length > 50 ? '...' : ''}"`);
+            
+            // 即時驗證
+            if (webhookInput.value && !webhookInput.value.startsWith('https://')) {
+                showMessage('⚠️ Webhook URL 必須以 https:// 開頭', 'error');
+            }
+        }
+
+        function saveTeamsSettings() {
+            log('🔄 開始儲存 Teams 設定...');
+            
+            try {
+                const enabled = document.getElementById('teamsEnabled').checked;
+                const webhook = document.getElementById('teamsWebhook').value.trim();
+                const backupWebhook = document.getElementById('teamsBackupWebhook').value.trim();
+                
+                log(`啟用狀態: ${enabled}`);
+                log(`主要 URL: ${webhook ? `已輸入 (${webhook.length} 字元)` : '未輸入'}`);
+                log(`備用 URL: ${backupWebhook ? `已輸入 (${backupWebhook.length} 字元)` : '未輸入'}`);
+                
+                // 驗證
+                if (enabled && !webhook) {
+                    showMessage('❌ 請輸入主要 Webhook URL', 'error');
+                    log('❌ 驗證失敗: 缺少主要 URL');
+                    return;
+                }
+                
+                if (enabled && webhook && !webhook.startsWith('https://')) {
+                    showMessage('❌ Webhook URL 必須以 https:// 開頭', 'error');
+                    log('❌ 驗證失敗: URL 格式錯誤');
+                    return;
+                }
+                
+                // 更新設定
+                settings.teamsEnabled = enabled;
+                settings.teamsWebhook = webhook;
+                settings.teamsBackupWebhook = backupWebhook;
+                
+                // 儲存到 localStorage
+                localStorage.setItem('teams_test_settings', JSON.stringify(settings));
+                
+                showMessage('✅ Teams 設定已儲存', 'success');
+                log('✅ 設定儲存成功');
+                
+            } catch (error) {
+                showMessage('❌ 儲存失敗: ' + error.message, 'error');
+                log('❌ 儲存錯誤: ' + error.message);
+            }
+        }
+
+        function testTeamsNotification() {
+            log('🧪 開始測試 Teams 通知...');
+            
+            try {
+                const enabled = document.getElementById('teamsEnabled').checked;
+                const webhook = document.getElementById('teamsWebhook').value.trim();
+                
+                if (!enabled) {
+                    showMessage('❌ 請先啟用 Teams 通知', 'error');
+                    log('❌ 測試失敗: 未啟用');
+                    return;
+                }
+                
+                if (!webhook) {
+                    showMessage('❌ 請輸入 Webhook URL', 'error');
+                    log('❌ 測試失敗: 未輸入 URL');
+                    return;
+                }
+                
+                if (!webhook.startsWith('https://')) {
+                    showMessage('❌ Webhook URL 必須以 https:// 開頭', 'error');
+                    log('❌ 測試失敗: URL 格式錯誤');
+                    return;
+                }
+                
+                // 發送測試訊息
+                log('📤 準備發送測試訊息...');
+                showMessage('📤 正在發送測試通知...', 'info');
+                
+                const payload = {
+                    "text": `🧪 Teams 通知測試\n時間：${new Date().toLocaleString()}\n如果您收到此訊息，表示 Teams 通知設定成功！`
+                };
+                
+                log('📦 Payload: ' + JSON.stringify(payload));
+                
+                fetch(webhook, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => {
+                    log(`✅ 請求發送成功 (${response.type})`);
+                    showMessage('✅ 測試通知已發送！請檢查 Teams 頻道', 'success');
+                })
+                .catch(error => {
+                    log('❌ 請求發送失敗: ' + error.message);
+                    showMessage('❌ 測試通知發送失敗: ' + error.message, 'error');
+                });
+                
+            } catch (error) {
+                showMessage('❌ 測試過程出錯: ' + error.message, 'error');
+                log('❌ 測試錯誤: ' + error.message);
+            }
+        }
+
+        function loadSettings() {
+            try {
+                const saved = localStorage.getItem('teams_test_settings');
+                if (saved) {
+                    const savedSettings = JSON.parse(saved);
+                    settings = Object.assign(settings, savedSettings);
+                    
+                    // 更新 UI
+                    document.getElementById('teamsEnabled').checked = settings.teamsEnabled || false;
+                    document.getElementById('teamsWebhook').value = settings.teamsWebhook || '';
+                    document.getElementById('teamsBackupWebhook').value = settings.teamsBackupWebhook || '';
+                    
+                    updateTeamsSettings();
+                    
+                    log('📥 設定已載入');
+                } else {
+                    log('ℹ️ 沒有找到已儲存的設定');
+                }
+            } catch (error) {
+                log('❌ 載入設定失敗: ' + error.message);
+            }
+        }
+
+        // 錯誤處理
+        window.onerror = function(message, source, lineno, colno, error) {
+            log(`❌ JavaScript 錯誤: ${message} (行 ${lineno})`);
+            showMessage('❌ 程式錯誤: ' + message, 'error');
+            return false;
+        };
+
+        // 初始化
+        window.onload = function() {
+            log('🧪 Teams 輸入最小測試工具已載入');
+            log('📱 User Agent: ' + navigator.userAgent.substring(0, 100) + '...');
+            log('🌐 URL: ' + window.location.href);
+            
+            // 載入設定
+            loadSettings();
+            
+            log('💡 請啟用 Teams 通知開始測試');
+        };
+    </script>
+</body>
+</html>
