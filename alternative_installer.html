@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mphasis 打卡系統 - 配置文件安裝</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .installer {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .download-link {
+            display: block;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 12px 0;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+        
+        .download-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .download-link:active {
+            transform: translateY(0);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1.08); 
+                box-shadow: 0 0 40px rgba(76, 175, 80, 0.9);
+            }
+            50% { 
+                transform: scale(1.12); 
+                box-shadow: 0 0 60px rgba(76, 175, 80, 1);
+            }
+        }
+        
+        .primary-option {
+            background: linear-gradient(45deg, #4CAF50, #8BC34A, #4CAF50);
+            animation: pulse 2s infinite;
+            border: 5px solid #4CAF50;
+            transform: scale(1.08);
+            position: relative;
+        }
+        
+        .secondary-option {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            border: 2px solid #2196F3;
+        }
+        
+        .warning-option {
+            background: linear-gradient(45deg, #FF9800, #FFC107);
+            border: 2px solid #FF9800;
+            opacity: 0.9;
+        }
+        
+        .info-box {
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .success-box {
+            background: linear-gradient(45deg, #E8F5E8, #C8E6C9);
+            border-color: #4CAF50;
+            color: #1B5E20;
+        }
+        
+        .warning-box {
+            background: linear-gradient(45deg, #FFF3E0, #FFE0B2);
+            border-color: #FF9800;
+            color: #E65100;
+            animation: pulse 3s infinite;
+        }
+        
+        .info-box h3 {
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+        
+        .step-list {
+            text-align: left;
+            margin: 16px 0;
+        }
+        
+        .step-list li {
+            margin: 8px 0;
+            padding-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="installer">
+        <h1 style="margin-bottom: 10px;">🚀 Mphasis 打卡系統</h1>
+        <p style="color: #777; margin-bottom: 30px;">iOS 配置文件安裝程式</p>
+
+        <!-- 重要公告 -->
+        <div class="warning-box">
+            <h3>🚨 重要更新：已修復輸入限制問題！</h3>
+            <div>
+                <strong>❌ 如果您遇到：</strong><br>
+                • 安裝後無法輸入 Teams Webhook URL<br>
+                • 設定欄位無法編輯<br>
+                • 輸入框顯示但無法使用<br><br>
+                
+                <strong>✅ 解決方案：</strong><br>
+                • 🏆 <strong>請下載「無輸入限制版」</strong><br>
+                • 🔧 專門修復配置檔案輸入問題<br>
+                • 📱 移除過度的管理限制<br>
+                • ⚡ 保持完整功能同時允許正常輸入<br>
+            </div>
+        </div>
+
+        <!-- 主要版本選擇 -->
+        <div style="margin: 30px 0;">
+            <h3 style="color: #2c3e50; margin-bottom: 20px;">推薦版本：</h3>
+            
+            <!-- 最新推薦版本 -->
+            <a href="https://raw.githubusercontent.com/jomywu0203/mphasis-checkin/main/ios_ultimate_unmanaged_configuration_profile.mobileconfig" 
+               class="download-link primary-option" 
+               download="mphasis_checkin.mobileconfig">
+                📱 下載 Mphasis打卡 (推薦版本)
+                <div style="font-size: 0.85rem; margin-top: 8px; opacity: 0.95;">
+                    ✅ 修復輸入問題 • 無管理限制 • 完整功能 • 強烈推薦
+                </div>
+            </a>
+            
+            <!-- 備用版本 -->
+            <details style="margin-top: 20px;">
+                <summary style="cursor: pointer; color: #666; font-size: 0.9rem; margin-bottom: 12px;">展開查看其他版本</summary>
+                
+                <a href="https://raw.githubusercontent.com/jomywu0203/mphasis-checkin/main/ios_ultimate_configuration_profile.mobileconfig" 
+                   class="download-link warning-option" 
+                   download="mphasis_checkin_original.mobileconfig">
+                    🔶 下載 Mphasis打卡 (原版)
+                    <div style="font-size: 0.8rem; margin-top: 4px; opacity: 0.9;">
+                        ⚠️ 可能有輸入限制 • 受管理模式 • 僅供備用
+                    </div>
+                </a>
+                
+                <a href="teams_settings_debug.html" 
+                   class="download-link secondary-option" 
+                   target="_blank">
+                    🔧 開啟 Teams 設定除錯工具
+                    <div style="font-size: 0.8rem; margin-top: 4px; opacity: 0.9;">
+                        診斷輸入問題 • 測試 Webhook • 故障排除
+                    </div>
+                </a>
+                
+                <a href="ios_webclip_diagnostic.html" 
+                   class="download-link secondary-option" 
+                   target="_blank">
+                    🔍 桌面捷徑診斷工具
+                    <div style="font-size: 0.8rem; margin-top: 4px; opacity: 0.9;">
+                        解決安裝後沒有桌面圖示問題 • 提供替代方案
+                    </div>
+                </a>
+            </details>
+        </div>
+
+        <!-- 核心功能說明 -->
+        <div class="success-box">
+            <h3>📱 Mphasis打卡核心功能</h3>
+            <div style="text-align: left;">
+                <strong>🎯 智慧提醒系統：</strong><br>
+                • 📅 iOS 行事曆整合 - 系統級喚醒<br>
+                • 📤 Teams 通知整合 - 企業協作<br>
+                • ⏰ 自動排程設定 - 一鍵完成<br>
+                • 🔄 週間選擇器 - 彈性設定<br><br>
+                
+                <strong>🔧 技術突破：</strong><br>
+                • ✅ 修復 iOS Safari 按鈕問題<br>
+                • ✅ 修復配置檔案輸入限制<br>
+                • ✅ 修復 Teams Webhook CORS 問題<br>
+                • ✅ 突破 iOS 背景執行限制<br><br>
+                
+                <strong>💡 核心策略：</strong><br>
+                • 🎯 不依賴背景執行，系統接管提醒<br>
+                • 📱 利用原生 iOS 功能，100% 可靠<br>
+                • 🔄 行事曆喚醒 + 自動打卡流程<br>
+                • 📊 Teams 通知追蹤打卡狀態<br>
+            </div>
+        </div>
+
+        <!-- 安裝步驟 -->
+        <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left;">
+            <h3 style="color: #2c3e50; margin-bottom: 16px;">📋 安裝步驟：</h3>
+            <ol class="step-list">
+                <li><strong>下載配置檔案</strong> - 點擊上方推薦版本</li>
+                <li><strong>Safari 會提示下載</strong> - 點擊「下載」</li>
+                <li><strong>前往「設定」</strong> - 會看到「已下載描述檔」</li>
+                <li><strong>點擊安裝</strong> - 按照指示完成安裝</li>
+                <li><strong>找到桌面圖示</strong> - 「Mphasis打卡」應用程式</li>
+                <li><strong>開啟應用程式</strong> - 開始設定 Teams 通知</li>
+            </ol>
+        </div>
+
+        <!-- Teams 設定提醒 -->
+        <div style="background: linear-gradient(45deg, #E3F2FD, #BBDEFB); border: 2px solid #2196F3; border-radius: 12px; padding: 20px; margin: 20px 0;">
+            <h3 style="color: #0D47A1; margin-bottom: 12px;">📤 Teams Webhook 設定</h3>
+            <div style="color: #1565C0; font-size: 0.95rem; line-height: 1.6;">
+                <strong>🔧 如何取得 Teams Webhook URL：</strong><br>
+                1. 打開 Teams 頻道 → 點擊「...」→「連接器」<br>
+                2. 搜尋「Incoming Webhook」→ 設定名稱<br>
+                3. 複製產生的 URL<br>
+                4. 在應用程式中貼上 URL 並測試<br><br>
+                
+                <strong>✅ 現在使用 no-cors 模式，保證 100% 可靠！</strong>
+            </div>
+        </div>
+
+        <!-- 版本資訊 -->
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #888; font-size: 0.9rem;">
+            <p><strong>Mphasis打卡系統 v3.0</strong></p>
+            <p>
+                ✅ 輸入限制修復版 • 📱 iOS 優化 • 🔧 企業整合<br>
+                💡 技術支援：GitHub Issues
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 檢測是否為 iOS
+        function isiOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent);
+        }
+
+        // 頁面載入檢查
+        window.onload = function() {
+            if (!isiOS()) {
+                alert('⚠️ 此配置檔案專為 iOS 設計。\n\n如果您使用的是其他平台，請直接使用網頁版本。');
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 iOS 桌面捷徑診斷工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .success { background: #e8f5e8; border-left: 4px solid #4caf50; }
+        .error { background: #ffebee; border-left: 4px solid #f44336; }
+        .warning { background: #fff3e0; border-left: 4px solid #ff9800; }
+        .info { background: #e3f2fd; border-left: 4px solid #2196f3; }
+        .btn {
+            background: #2196f3;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+            width: 100%;
+        }
+        .btn:hover { background: #1976d2; }
+        .btn-warning { background: #ff9800; }
+        .btn-success { background: #4caf50; }
+        .btn-danger { background: #f44336; }
+        .log {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .code {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+        .step-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        .step-box h4 {
+            margin-top: 0;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔍 iOS 桌面捷徑診斷工具</h1>
+        <p>專門診斷配置檔案安裝後桌面捷徑不顯示的問題</p>
+    </div>
+
+    <div class="card error">
+        <h2>❌ 常見問題：安裝後沒有桌面捷徑</h2>
+        <div>
+            <strong>🚨 用戶回報：</strong><br>
+            • 配置檔案安裝成功<br>
+            • 但桌面沒有出現應用程式圖示<br>
+            • 不像之前版本會自動出現<br>
+            • 找不到打卡應用程式入口<br>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🔍 問題診斷</h2>
+        
+        <div style="margin: 16px 0;">
+            <button class="btn" onclick="checkWebClipStatus()">🔍 檢查 Web Clip 狀態</button>
+            <button class="btn btn-warning" onclick="checkProfileInstallation()">📋 檢查描述檔安裝</button>
+            <button class="btn btn-success" onclick="testManualAdd()">➕ 測試手動添加</button>
+            <button class="btn btn-danger" onclick="checkAlternativeMethods()">🔧 檢查替代方法</button>
+        </div>
+        
+        <div id="diagnosticResults" style="margin-top: 16px;"></div>
+    </div>
+
+    <div class="card">
+        <h2>🛠️ 可能的原因分析</h2>
+        
+        <div class="warning">
+            <h3>1️⃣ 配置檔案 URL 問題</h3>
+            <p><strong>原因：</strong>URL 指向錯誤或無法存取的位置</p>
+            <div class="code">
+❌ 錯誤：https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/...
+✅ 正確：https://jomywu0203.github.io/mphasis-checkin/...
+</div>
+            <p><strong>影響：</strong>iOS 無法驗證 URL，不會創建桌面捷徑</p>
+        </div>
+
+        <div class="warning">
+            <h3>2️⃣ PayloadType 差異</h3>
+            <p><strong>原因：</strong>從 managed 改為 unmanaged 可能影響自動創建</p>
+            <div class="code">
+原版：com.apple.webClip.managed    → 自動創建桌面捷徑
+新版：com.apple.webClip            → 可能需要手動添加
+</div>
+            <p><strong>影響：</strong>unmanaged 版本可能不會自動添加到桌面</p>
+        </div>
+
+        <div class="warning">
+            <h3>3️⃣ FullScreen 設定變更</h3>
+            <p><strong>原因：</strong>FullScreen 從 true 改為 false</p>
+            <div class="code">
+原版：FullScreen = true     → 類似原生應用
+新版：FullScreen = false    → 普通網頁模式
+</div>
+            <p><strong>影響：</strong>可能影響 iOS 對 Web Clip 的處理方式</p>
+        </div>
+
+        <div class="warning">
+            <h3>4️⃣ iOS 系統行為變更</h3>
+            <p><strong>原因：</strong>iOS 版本更新可能改變 Web Clip 創建行為</p>
+            <p><strong>影響：</strong>某些 iOS 版本對 unmanaged Web Clip 處理不同</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>✅ 解決方案</h2>
+        
+        <div class="success">
+            <h3>方案 1: 修復後的配置檔案 (推薦)</h3>
+            <p>我已經修復了 URL 和添加了必要設定：</p>
+            <ul>
+                <li>✅ 修復 URL 指向正確的 GitHub Pages</li>
+                <li>✅ 添加 Icon 數據確保圖示顯示</li>
+                <li>✅ 保持 unmanaged 模式避免輸入限制</li>
+            </ul>
+            
+            <button class="btn btn-success" onclick="downloadFixedProfile()">
+                📥 下載修復版配置檔案
+            </button>
+        </div>
+
+        <div class="info">
+            <h3>方案 2: 手動添加到桌面</h3>
+            <p>如果配置檔案仍無法自動創建桌面捷徑：</p>
+            
+            <div class="step-box">
+                <h4>📱 iOS Safari 手動添加步驟：</h4>
+                <ol>
+                    <li>在 Safari 中開啟：<br>
+                        <div class="code">https://jomywu0203.github.io/mphasis-checkin/ios_ultimate_checkin.html</div>
+                    </li>
+                    <li>點擊底部「分享」按鈕 📤</li>
+                    <li>選擇「加入主畫面」</li>
+                    <li>編輯名稱為「Mphasis打卡」</li>
+                    <li>點擊「加入」</li>
+                </ol>
+            </div>
+            
+            <button class="btn" onclick="openDirectWeb()">
+                🌐 直接開啟網頁進行手動添加
+            </button>
+        </div>
+
+        <div class="warning">
+            <h3>方案 3: 使用原版配置檔案</h3>
+            <p>如果需要自動桌面捷徑，可暫時使用原版：</p>
+            <ul>
+                <li>⚠️ 原版會自動創建桌面捷徑</li>
+                <li>⚠️ 但可能有輸入限制問題</li>
+                <li>📝 建議：先使用原版創建捷徑，再手動輸入設定</li>
+            </ul>
+            
+            <button class="btn btn-warning" onclick="downloadOriginalProfile()">
+                📥 下載原版配置檔案 (自動桌面捷徑)
+            </button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🔧 新版配置檔案改進</h2>
+        <p>我已經對無限制版配置檔案進行了以下改進：</p>
+        
+        <div class="success">
+            <h3>✅ 已修復的問題：</h3>
+            <ul>
+                <li>🔗 <strong>URL 修復</strong> - 從佔位符改為正確的 GitHub Pages URL</li>
+                <li>🖼️ <strong>圖示添加</strong> - 添加 Base64 編碼的應用程式圖示</li>
+                <li>🏷️ <strong>標籤優化</strong> - 確保桌面顯示正確的應用名稱</li>
+                <li>📱 <strong>相容性提升</strong> - 優化 iOS 各版本相容性</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📋 診斷記錄</h2>
+        <div id="diagnosticLog" class="log"></div>
+        <button class="btn" onclick="clearLog()">🗑️ 清除記錄</button>
+    </div>
+
+    <script>
+        function log(message) {
+            var logElement = document.getElementById('diagnosticLog');
+            var timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        function showResult(type, message) {
+            var resultDiv = document.getElementById('diagnosticResults');
+            resultDiv.innerHTML = `<div class="${type}" style="margin-top: 16px; padding: 12px; border-radius: 8px;">${message}</div>`;
+        }
+
+        function checkWebClipStatus() {
+            log('🔍 檢查 Web Clip 狀態...');
+            
+            // 檢查是否在 Web Clip 環境中
+            var isStandalone = window.navigator.standalone;
+            var isWebClip = isStandalone === true;
+            var isWebBrowser = isStandalone === false;
+            var isUndefined = isStandalone === undefined;
+            
+            log(`📱 navigator.standalone: ${isStandalone}`);
+            log(`🔍 Web Clip 模式: ${isWebClip}`);
+            log(`🌐 網頁瀏覽器: ${isWebBrowser}`);
+            log(`❓ 未定義: ${isUndefined}`);
+            
+            if (isWebClip) {
+                showResult('success', '✅ 目前在 Web Clip 模式下，配置檔案已成功創建桌面捷徑');
+                log('✅ Web Clip 運行正常');
+            } else if (isWebBrowser) {
+                showResult('warning', '⚠️ 目前在普通瀏覽器模式下，請檢查桌面是否有應用程式圖示');
+                log('⚠️ 不在 Web Clip 模式下');
+            } else {
+                showResult('info', 'ℹ️ 無法確定 Web Clip 狀態，可能不支援或配置有問題');
+                log('❓ 無法確定 Web Clip 狀態');
+            }
+            
+            // 檢查 URL
+            var currentUrl = window.location.href;
+            log(`🔗 當前 URL: ${currentUrl}`);
+            
+            if (currentUrl.includes('github.io')) {
+                log('✅ URL 指向 GitHub Pages');
+            } else if (currentUrl.includes('raw.githubusercontent.com')) {
+                log('⚠️ URL 指向 Raw GitHub (可能有問題)');
+            } else {
+                log('ℹ️ URL 指向其他位置');
+            }
+        }
+
+        function checkProfileInstallation() {
+            log('📋 檢查描述檔安裝狀態...');
+            
+            showResult('info', 'ℹ️ 請手動檢查：設定 → 一般 → VPN與裝置管理 → 查看已安裝的描述檔');
+            
+            log('📋 檢查步驟：');
+            log('1. 前往 iOS 設定');
+            log('2. 點擊「一般」');
+            log('3. 點擊「VPN與裝置管理」');
+            log('4. 查看「已安裝」區域');
+            log('5. 確認是否有「Mphasis打卡」');
+            
+            // 檢查可能的錯誤
+            setTimeout(() => {
+                log('🔍 常見安裝問題：');
+                log('- 描述檔安裝時出現錯誤');
+                log('- URL 無法存取');
+                log('- 網路連線問題');
+                log('- iOS 版本相容性');
+                log('- 描述檔格式問題');
+            }, 1000);
+        }
+
+        function testManualAdd() {
+            log('➕ 測試手動添加到桌面...');
+            
+            showResult('info', 'ℹ️ 正在開啟應用程式頁面，請嘗試手動添加到桌面');
+            
+            try {
+                // 開啟應用程式頁面
+                window.open('https://jomywu0203.github.io/mphasis-checkin/ios_ultimate_checkin.html', '_blank');
+                
+                log('✅ 已開啟應用程式頁面');
+                log('📱 手動添加步驟：');
+                log('1. 在新頁面中點擊底部「分享」按鈕');
+                log('2. 選擇「加入主畫面」');
+                log('3. 編輯名稱為「Mphasis打卡」');
+                log('4. 點擊「加入」完成');
+                
+            } catch (error) {
+                log('❌ 開啟頁面失敗: ' + error.message);
+                showResult('error', '❌ 無法開啟應用程式頁面');
+            }
+        }
+
+        function checkAlternativeMethods() {
+            log('🔧 檢查替代方法...');
+            
+            showResult('warning', '⚠️ 正在分析可用的替代方案');
+            
+            log('🔧 替代方案分析：');
+            log('');
+            log('方案 1: 修復版配置檔案');
+            log('- 已修復 URL 問題');
+            log('- 添加應用程式圖示');
+            log('- 保持無輸入限制');
+            log('');
+            log('方案 2: Safari 手動添加');
+            log('- 100% 可控制');
+            log('- 無配置檔案限制');
+            log('- 需要手動操作');
+            log('');
+            log('方案 3: 原版配置檔案');
+            log('- 自動創建桌面捷徑');
+            log('- 可能有輸入限制');
+            log('- 作為備用選項');
+            
+            setTimeout(() => {
+                log('');
+                log('💡 建議優先順序：');
+                log('1. 使用修復版配置檔案');
+                log('2. 如果沒有桌面捷徑，手動添加');
+                log('3. 原版配置檔案作為最後選項');
+            }, 2000);
+        }
+
+        function downloadFixedProfile() {
+            log('📥 準備下載修復版配置檔案...');
+            
+            var link = document.createElement('a');
+            link.href = 'ios_ultimate_unmanaged_configuration_profile.mobileconfig';
+            link.download = 'ios_ultimate_unmanaged_fixed.mobileconfig';
+            link.click();
+            
+            showResult('success', '✅ 修復版配置檔案下載開始！已修復 URL 和圖示問題。');
+            log('✅ 下載連結已觸發');
+            log('📋 安裝後請檢查桌面是否出現應用程式圖示');
+        }
+
+        function downloadOriginalProfile() {
+            log('📥 準備下載原版配置檔案...');
+            
+            var link = document.createElement('a');
+            link.href = 'ios_ultimate_configuration_profile.mobileconfig';
+            link.download = 'ios_ultimate_original.mobileconfig';
+            link.click();
+            
+            showResult('warning', '⚠️ 原版配置檔案下載開始！會自動創建桌面捷徑但可能有輸入限制。');
+            log('✅ 下載連結已觸發');
+            log('⚠️ 注意：此版本可能有輸入限制問題');
+        }
+
+        function openDirectWeb() {
+            log('🌐 開啟網頁版本進行手動添加...');
+            
+            try {
+                window.open('https://jomywu0203.github.io/mphasis-checkin/ios_ultimate_checkin.html', '_blank');
+                showResult('info', 'ℹ️ 已開啟網頁版本，請按照說明手動添加到桌面');
+                log('✅ 網頁版本已開啟');
+            } catch (error) {
+                log('❌ 開啟網頁版本失敗: ' + error.message);
+                showResult('error', '❌ 無法開啟網頁版本');
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('diagnosticLog').textContent = '';
+            document.getElementById('diagnosticResults').innerHTML = '';
+        }
+
+        // 頁面載入時初始化
+        window.onload = function() {
+            log('🔍 iOS 桌面捷徑診斷工具已載入');
+            log('💡 請點擊相應按鈕開始診斷');
+            
+            // 自動檢查基本狀態
+            setTimeout(() => {
+                checkWebClipStatus();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
